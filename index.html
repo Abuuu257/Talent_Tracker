@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Talent Tracker - Home</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+:root {
+    --primary: #012A61;
+    --secondary: #275A91;
+    --highlight: #FDC787;
+    --background: #A5C5CC;
+    --accent: #977086;
+}
+body { font-family: "Montserrat", sans-serif; background-color: var(--background); }
+.modal-slide { transition: transform .4s cubic-bezier(.25,.46,.45,.94); }
+.signup-enter { opacity: 0; transform: scale(.9); transition: all .3s ease; }
+.signup-active { opacity: 1; transform: scale(1); }
+.pointer-auto { pointer-events: auto !important; }
+</style>
+</head>
+
+<body class="min-h-screen overflow-x-hidden">
+
+<!-- NAVBAR -->
+<nav class="fixed top-0 left-0 w-full bg-[var(--background)] shadow-md z-50">
+  <div class="max-w-7xl mx-auto px-6 py-3 flex justify-between items-center relative">
+    <!-- Logo -->
+    <div class="text-2xl font-extrabold text-black tracking-wide">Talent Tracker</div>
+
+    <!-- Desktop Menu -->
+    <div class="hidden md:flex space-x-8 font-medium text-black items-center">
+      <a href="index.html" class="hover:text-[var(--primary)] transition">Home</a>
+      <a href="#" class="hover:text-[var(--primary)] transition">Event</a>
+      <div class="relative">
+  <button id="navLoginBtn"
+    class="px-4 py-2 rounded-3xl bg-[var(--secondary)] text-white hover:bg-[var(--primary)] transition font-semibold shadow-md">
+    Login
+  </button>
+
+  <!-- DROPDOWN -->
+  <div id="logoutDropdown"
+      class="absolute right-0 mt-2 w-32 bg-white rounded-lg shadow-lg hidden z-50">
+    <button id="logoutBtn"
+      class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100 rounded-lg">
+      Logout
+    </button>
+  </div>
+</div>
+
+    </div>
+
+    <!-- Mobile Hamburger -->
+    <button id="mobileMenuButton" class="md:hidden text-3xl font-bold">&#9776;</button>
+
+    <!-- Mobile Menu -->
+    <div id="mobileMenu" 
+         class="md:hidden flex flex-col items-center space-y-4 font-medium text-black 
+                absolute right-0 top-14 bg-white w-56 py-4 rounded-xl shadow-xl 
+                translate-x-full transition-transform duration-300 z-50" style="background-color: var(--background);">
+
+      <!-- Back Button -->
+      <button id="mobileBackBtn" 
+              class="absolute right-4 top-2 text-2xl font-bold text-black">
+        →
+      </button>
+
+      <!-- Menu Items -->
+      <a href="index.html" class="hover:text-[var(--primary)] w-full text-center py-2">Home</a>
+      <a href="#" class="hover:text-[var(--primary)] w-full text-center py-2">Event</a>
+      <button id="mobileLoginBtn" class="w-3/4 px-4 py-2 rounded-3xl bg-[var(--secondary)] text-white hover:bg-[var(--primary)] transition font-semibold shadow-md mt-2">
+        Login
+      </button>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section id="heroSection" class="pt-32 pb-12 max-w-7xl mx-auto px-4">
+    <div class="grid grid-cols-1 lg:grid-cols-10 gap-12 items-center">
+        <div class="lg:col-span-5 animate-fade text-center">
+            <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-[var(--primary)] leading-tight mb-6 text-center">
+              Track Your Talent Unlock Your Potential.
+            </h1>
+            <p class="text-base sm:text-xl text-black opacity-90 font-medium mb-10 text-left pl-10">
+              Your journey, your progress, and your performance<br>
+              all in one place. Built to help athletes train smarter,<br>
+              stay consistent, and reach their true potential.
+            </p>
+            <button id="getStartBtn" class="bg-[var(--secondary)] text-white px-10 py-4 rounded-full shadow-xl hover:bg-[var(--primary)] transition font-bold text-lg block mx-auto text-center">
+              Get Started
+            </button>
+        </div>
+        <div class="lg:col-span-5 flex justify-center lg:justify-end animate-fade pt-12 lg:pt-0 -mt-0 lg:-mt-12 relative">
+            <img src="assets/Will’s Track Photo.jpeg" class="w-full max-w-md lg:max-w-none lg:h-[525px] object-cover rounded-3xl shadow-2xl" />
+        </div>
+    </div>
+</section>
+
+<!-- SIGNUP MODAL -->
+<div id="signupModal" class="fixed inset-0 bg-black/60 flex justify-center items-center opacity-0 pointer-events-none transition z-[200]">
+    <div id="signupBox" class="bg-white w-80 md:w-96 p-8 rounded-2xl shadow-2xl relative signup-enter">
+        <button id="signupCloseBtn" class="absolute top-4 right-4 text-black text-3xl font-extrabold hover:bg-gray-200 px-2 rounded-full">→</button>
+        <h2 class="text-center text-3xl font-bold text-black mb-6">Sign Up As</h2>
+        <div class="space-y-4">
+            <button id="signupAthleteBtn" class="w-full bg-[var(--accent)] text-white py-4 rounded-xl hover:bg-[var(--background)] transition font-semibold">Athlete</button>
+            <button id="signupCoachBtn" class="w-full bg-[var(--secondary)] text-white py-4 rounded-xl hover:bg-[var(--background)] transition font-semibold">Coach</button>
+            <button id="signupFedBtn" class="w-full bg-[var(--primary)] text-white py-4 rounded-xl hover:bg-[var(--background)] hover:text-white transition font-semibold">Federation</button>
+        </div>
+    </div>
+</div>
+
+<!-- WHAT WE DO -->
+<div class="border-t border-gray-400 mt-12">
+    <h2 class="text-3xl font-bold text-[var(--primary)] mb-12 mt-5 text-center">What We Do</h2>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 text-center">
+        <div class=" w-100 h-80 bg-white/50 rounded-2xl p-8 shadow-lg flex flex-col items-center justify-center lg:translate-x-6">
+            <h3 class="text-xl font-semibold text-[var(--primary)] mb-3">Identify Hidden Talent</h3>
+            <p class="text-black opacity-90">We highlight athletes from underserved communities who deserve national visibility.</p>
+        </div>
+
+        <div class=" w-100 h-80 bg-white/50 rounded-2xl p-8 shadow-lg flex flex-col items-center justify-center">
+            <h3 class="text-xl font-semibold text-[var(--primary)] mb-3">Performance Portfolio</h3>
+            <p class="text-black opacity-90">Athletes can showcase achievements, upload documents, and build a professional portfolio.</p>
+        </div>
+
+        <div class=" w-100 h-80 bg-white/50 rounded-2xl p-8 shadow-lg flex flex-col items-center justify-center lg:-translate-x-6">
+            <h3 class="text-xl font-semibold text-[var(--primary)] mb-3">Connect With Experts</h3>
+            <p class="text-black opacity-90">Coaches, scouts, and sports bodies can discover and evaluate rising talent efficiently.</p>
+        </div>
+    </div>
+</div>
+
+<!-- MISSION + VALUES -->
+<div class="max-w-7xl mx-auto px-6 py-12 border-t border-gray-400 mt-12">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+        <div>
+            <h2 class="text-3xl font-bold text-[var(--primary)] mb-6 text-center lg:text-left">Our Mission</h2>
+            <p class="text-base sm:text-lg text-black opacity-90 leading-relaxed text-center lg:text-left">
+                Talent Tracker aims to provide equal opportunities for athletes from rural areas by
+                giving them access to exposure, performance tracking, and professional scouting.
+                The platform bridges the gap between hidden potential and professional recognition.
+            </p>
+        </div>
+
+        <div>
+            <h2 class="text-3xl font-bold text-[var(--primary)] mb-6 text-center lg:text-left">Our Commitment</h2>
+            <p class="text-base sm:text-lg text-black opacity-90 leading-relaxed text-center lg:text-left">
+                We are committed to fairness, transparency, and athlete empowerment. Talent Tracker
+                ensures accessible technology, secure data, and unbiased profiling to promote equal
+                opportunities within the Sri Lankan sports ecosystem.
+            </p>
+        </div>
+    </div>
+</div>
+
+<!-- FOOTER -->
+<footer class="bg-[var(--background)] text-black border-t border-gray-400 mt-12">
+  <div class="max-w-7xl mx-auto py-8 text-center text-sm font-medium">
+    © 2025 Talent Tracker. All Rights Reserved.
+  </div>
+</footer>
+
+<script type="module" src="index.js"></script>
+
+<!-- ROLE BASED LOGIN MODAL -->
+<div id="loginModal" class="fixed inset-0 bg-black/50 flex items-center justify-center hidden z-50">
+  <div class="bg-white w-[520px] rounded-xl overflow-hidden flex">
+
+    <div class="w-1/3 bg-[#2E5F9E] text-white p-5 space-y-4">
+      <h3 class="font-bold text-lg mb-4">Login as</h3>
+      <button id="role-athlete" onclick="switchRole('athlete')" class="w-full py-2 rounded bg-white text-[#2E5F9E] font-semibold">Athlete</button>
+      <button id="role-coach" onclick="switchRole('coach')" class="w-full py-2 rounded bg-white text-[#2E5F9E] font-semibold">Coach</button>
+      <button id="role-federation" onclick="switchRole('federation')" class="w-full py-2 rounded bg-white text-[#2E5F9E] font-semibold">Federation</button>
+    </div>
+
+    <div class="w-2/3 p-8 relative bg-white">
+      <button onclick="closeLogin()" class="absolute top-4 right-5 text-xl text-gray-500 hover:text-black">&times;</button>
+
+      <h2 id="loginTitle" class="text-2xl font-bold text-gray-800 mb-6">
+        Athlete Login
+      </h2>
+
+      <form class="space-y-4" onsubmit="return false;">
+        <input
+          id="login-identifier"
+          type="text"
+          placeholder="Username"
+          class="w-full border border-gray-300 rounded-lg px-4 py-2
+                 focus:outline-none focus:ring-2 focus:ring-[#2E5F9E]"
+        />
+
+        <input
+          id="login-password"
+          type="password"
+          placeholder="Password"
+          class="w-full border border-gray-300 rounded-lg px-4 py-2
+                 focus:outline-none focus:ring-2 focus:ring-[#2E5F9E]"
+        />
+
+        <p id="loginError" class="text-sm text-red-600 hidden"></p>
+
+        <button
+          id="loginBtn"
+          type="button"
+          class="w-full bg-[#2E5F9E] hover:bg-[#244F85]
+                 text-white font-semibold py-2 rounded-lg transition"
+        >
+          Login
+        </button>
+      </form>
+
+      <div class="mt-8 text-center">
+        <p class="text-sm text-gray-600 mb-3">Don’t have an account?</p>
+
+        <div class="flex justify-center gap-3">
+          <a href="signup-athlete.html"
+             class="px-4 py-2 rounded-full border border-[#2E5F9E]
+                    text-[#2E5F9E] font-medium
+                    hover:bg-[#2E5F9E] hover:text-white transition">
+            Athlete
+          </a>
+
+          <a href="signup-coach.html"
+             class="px-4 py-2 rounded-full border border-[#2E5F9E]
+                    text-[#2E5F9E] font-medium
+                    hover:bg-[#2E5F9E] hover:text-white transition">
+            Coach
+          </a>
+
+          <a href="signup-federation.html"
+             class="px-4 py-2 rounded-full border border-[#2E5F9E]
+                    text-[#2E5F9E] font-medium
+                    hover:bg-[#2E5F9E] hover:text-white transition">
+            Federation
+          </a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- FIREBASE LOGIN (USERNAME -> EMAIL -> AUTH) + SHOW USERNAME ON NAV -->
+<script type="module">
+  import { auth, db } from "./register.js";
+  import { signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
+  import { collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+  import { signOut } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
+
+
+  /* ===============================
+     REQUIRED STATE + HELPERS
+     =============================== */
+
+  let currentRole = "athlete"; // ✅ DEFAULT ROLE
+
+  window.switchRole = (role) => {
+    currentRole = role;
+    document.getElementById("loginTitle").innerText =
+      role.charAt(0).toUpperCase() + role.slice(1) + " Login";
+  };
+
+  window.openLogin = () => {
+    document.getElementById("loginModal").classList.remove("hidden");
+  };
+
+  window.closeLogin = () => {
+    document.getElementById("loginModal").classList.add("hidden");
+  };
+
+  /* ===============================
+     ELEMENT REFERENCES
+     =============================== */
+
+  const navLoginBtn = document.getElementById("navLoginBtn");
+  const mobileLoginBtn = document.getElementById("mobileLoginBtn");
+  const loginBtn = document.getElementById("loginBtn");
+  const err = document.getElementById("loginError");
+
+  function showErr(msg) {
+    err.textContent = msg;
+    err.classList.remove("hidden");
+  }
+
+  function clearErr() {
+    err.textContent = "";
+    err.classList.add("hidden");
+  }
+
+  function setNavbarUser(username) {
+    if (navLoginBtn) navLoginBtn.textContent = username;
+    if (mobileLoginBtn) mobileLoginBtn.textContent = username;
+  }
+
+  /* ===============================
+     KEEP USER AFTER REFRESH
+     =============================== */
+
+  document.addEventListener("DOMContentLoaded", () => {
+    const savedUser = localStorage.getItem("tt_username");
+    if (savedUser) {
+      setNavbarUser(savedUser);
+    }
+
+    const openIfNotLogged = (e) => {
+      if (localStorage.getItem("tt_username")) return;
+      e.preventDefault();
+      openLogin();
+    };
+
+    navLoginBtn?.addEventListener("click", openIfNotLogged);
+    mobileLoginBtn?.addEventListener("click", openIfNotLogged);
+  });
+
+  /* ===============================
+     LOGIN ACTION
+     =============================== */
+
+  loginBtn.addEventListener("click", async () => {
+    clearErr();
+
+    const username = document.getElementById("login-identifier").value.trim();
+    const password = document.getElementById("login-password").value;
+
+    if (!username || !password) {
+      showErr("Please enter both username and password.");
+      return;
+    }
+
+    loginBtn.disabled = true;
+    loginBtn.textContent = "Logging in...";
+
+    try {
+      // 1️⃣ Find user by username + role
+      const q = query(
+        collection(db, "users"),
+        where("username", "==", username),
+        where("role", "==", currentRole)
+      );
+
+      const snap = await getDocs(q);
+
+      if (snap.empty) {
+        showErr("Username not found for this role.");
+        return;
+      }
+
+      const email = snap.docs[0].data().email;
+
+      // 2️⃣ Firebase Auth
+      await signInWithEmailAndPassword(auth, email, password);
+
+      // 3️⃣ Success
+      localStorage.setItem("tt_username", username);
+      localStorage.setItem("tt_role", currentRole);
+
+      setNavbarUser(username);
+      closeLogin();
+
+      document.getElementById("login-identifier").value = "";
+      document.getElementById("login-password").value = "";
+
+    } catch (e) {
+      if (e.code === "auth/wrong-password") {
+        showErr("Incorrect password.");
+      } else {
+        showErr("Login failed. Please try again.");
+      }
+    } finally {
+      loginBtn.disabled = false;
+      loginBtn.textContent = "Login";
+    }
+  });
+</script>
+<script>
+  const dropdown = document.getElementById("logoutDropdown");
+const logoutBtn = document.getElementById("logoutBtn");
+
+// Toggle dropdown when username is clicked
+navLoginBtn.addEventListener("click", (e) => {
+  const loggedInUser = localStorage.getItem("tt_username");
+  if (!loggedInUser) return; // normal login behaviour
+
+  e.preventDefault();
+  dropdown.classList.toggle("hidden");
+});
+
+// Logout action
+logoutBtn.addEventListener("click", async () => {
+  try {
+    await signOut(auth);
+  } catch (e) {
+    console.error("Logout error:", e);
+  }
+
+  // Clear session
+  localStorage.removeItem("tt_username");
+  localStorage.removeItem("tt_role");
+
+  // Reset UI
+  navLoginBtn.textContent = "Login";
+  dropdown.classList.add("hidden");
+});
+
+document.addEventListener("click", (e) => {
+  if (!navLoginBtn.contains(e.target) && !dropdown.contains(e.target)) {
+    dropdown.classList.add("hidden");
+  }
+});
+
+</script>
+
+</body>
+</html>

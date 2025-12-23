@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome - Talent Tracker</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        /* ========================================
+           2. CSS VARIABLES (THEME COLORS)
+           ========================================
+           These variables keep color consistency across the site.
+           If you change a hex code here, it updates everywhere.
+        */
+        :root {
+            --primary: #012A61;    /* Deep Navy Blue */
+            --secondary: #275A91;  /* Medium Blue */
+            --highlight: #FDC787;  /* Gold/Yellow Highlight */
+            --background: #A5C5CC; /* Light Blue-Grey Background */
+            --accent: #977086;     /* Muted Purple Accent */
+        }
+        
+        /* Apply the font family and background color to the whole page */
+        body { font-family: "Montserrat", sans-serif; background-color: var(--background); }
+    </style>
+</head>
+
+<body class="min-h-screen overflow-x-hidden">
+
+<nav class="fixed top-0 left-0 w-full bg-[var(--background)] shadow-md z-[100]">
+  <div class="max-w-7xl mx-auto px-6 py-3 flex justify-between items-center relative">
+    
+    <div class="text-2xl font-extrabold text-black tracking-wide">Talent Tracker</div>
+
+    <div class="hidden md:flex space-x-8 font-medium text-black items-center">
+      <a href="nonprofile.html" class="hover:text-[var(--primary)] transition font-bold text-[var(--primary)]">Home</a>
+      
+      <a href="#" class="hover:text-[var(--primary)] transition">Event</a>
+      
+      <div id="navUserArea" class="relative">
+        <button id="navUserBtn" class="px-6 py-2 rounded-3xl bg-[var(--secondary)] text-white hover:bg-[var(--primary)] transition font-semibold shadow-md flex items-center gap-2">
+            Loading... 
+        </button>
+        
+        <div id="navUserDropdown" class="hidden absolute right-0 mt-2 w-48 bg-white shadow-lg rounded-md text-black p-4 border border-gray-200 z-50 animate-fade">
+            <p id="navUserEmail" class="text-xs text-gray-500 mb-3 font-semibold break-words border-b pb-2"></p>
+            <button id="logoutBtn" class="w-full bg-[var(--secondary)] text-white py-2 rounded hover:bg-[var(--primary)] transition text-sm font-bold">Logout</button>
+        </div>
+      </div>
+    </div>
+
+    <button id="mobileMenuButton" class="md:hidden text-3xl font-bold">&#9776;</button>
+
+    <div id="mobileMenu" class="md:hidden flex flex-col items-center space-y-4 font-medium text-black absolute right-0 top-14 bg-white w-56 py-6 rounded-xl shadow-xl translate-x-full transition-transform duration-300 z-50">
+      <button id="mobileMenuBackBtn" class="absolute right-4 top-2 text-2xl font-bold text-black">&rarr;</button>
+      
+      <a href="nonprofile.html" class="hover:text-[var(--primary)] w-full text-center py-2 text-[var(--primary)] font-bold">Home</a>
+      <a href="#" class="hover:text-[var(--primary)] w-full text-center py-2">Event</a>
+      
+      <div class="w-full border-t border-gray-300 mt-2 pt-4 flex flex-col items-center">
+          <p id="mobileUserName" class="font-bold text-[var(--primary)] uppercase mb-2"></p>
+          <button id="mobileLogoutBtn" class="w-3/4 px-4 py-2 rounded-3xl bg-red-600 text-white hover:bg-red-700 transition font-semibold shadow-md">Logout</button>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<section id="heroSection" class="pt-24 pb-16 max-w-7xl mx-auto px-4">
+    <div class="grid grid-cols-1 lg:grid-cols-10 gap-12 items-center">
+        
+        <div class="lg:col-span-5 flex flex-col justify-center items-center text-center lg:items-center">
+            
+            <h1 class="text-4xl sm:text-5xl lg:text-5xl font-extrabold text-[var(--primary)] leading-tight mb-6">
+                Welcome <span id="heroUserDisplay" class="text-[var(--primary)]">Athlete</span>! <br>
+                <span class="block mt-3">Start Your Journey With Us Today.</span>
+            </h1>
+
+            <p class="text-base sm:text-xl text-black opacity-90 font-medium mb-10 leading-relaxed max-w-lg">
+                Create your profile to unlock your personal dashboard and begin tracking your performance and achievements.
+            </p>
+            
+            <button id="createProfileBtn" class="bg-[var(--secondary)] text-white px-10 py-4 rounded-full shadow-xl hover:bg-[var(--primary)] transition font-bold text-lg transform hover:-translate-y-1">
+                Create Profile
+            </button>
+        </div>
+
+        <div class="lg:col-span-5 flex justify-center lg:justify-end relative">
+            <img src="assets/Will’s Track Photo.jpeg" class="w-full max-w-md lg:max-w-none lg:h-[525px] object-cover rounded-3xl shadow-2xl" alt="Athlete" />
+        </div>
+    </div>
+</section>
+
+<footer class="bg-[var(--background)] text-black border-t border-gray-400 mt-12">
+    <div class="max-w-7xl mx-auto py-8 text-center text-sm font-medium">
+        © 2025 Talent Tracker. All Rights Reserved.
+    </div>
+</footer>
+
+<script type="module" src="nonprofile.js"></script>
+
+</body>
+</html>

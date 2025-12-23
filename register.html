@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Custom Styles to override or enhance Tailwind */
+        body { font-family: "Montserrat", sans-serif; background-color: #A5C5CC; }
+        
+        /* Styles for the Email and Password input fields */
+        .input-box { width: 100%; padding: 1rem; border-radius: 12px; border: 1px solid #ccc; outline: none; }
+        
+        /* Change border color when the user clicks inside the input */
+        .input-box:focus { border-color: #275A91; ring: 2px; ring-color: #275A91; }
+    </style>
+</head>
+
+<body class="min-h-screen flex flex-col items-center justify-center">
+
+    <section class="pt-20 pb-20 max-w-xl mx-auto px-6 w-full">
+        
+        <div class="bg-white p-8 rounded-2xl shadow-lg border-2 border-[#275A91]">
+            <h2 class="text-2xl font-bold text-center text-[#012A61] mb-6">Create Account</h2>
+            
+            <div class="space-y-5 font-poppins">
+                <div>
+                    <label class="font-semibold text-black">Email</label>
+                    <input id="signupEmail" type="email" placeholder="Enter email" class="input-box focus:border-[#275A91]" />
+                </div>
+                
+                <div>
+                    <label class="font-semibold text-black">Password</label>
+                    <input id="signupPassword" type="password" placeholder="Enter password (min 6 chars)" class="input-box focus:border-[#275A91]" />
+                </div>
+            </div>
+
+            <button id="singupsubmit" class="mt-8 w-full bg-[#275A91] text-white py-4 rounded-xl hover:bg-[#012A61] transition font-bold shadow-md">
+                Sign Up
+            </button>
+            
+            <p id="msg" class="text-center text-red-600 font-semibold mt-4"></p>
+            
+            <div class="text-center mt-4">
+                <a href="index.html" class="text-sm text-gray-500 hover:text-[#012A61]">Back to Home</a>
+            </div>
+        </div>
+    </section>
+
+    <script type="module">
+        // 1. IMPORT FUNCTIONALITY
+        // We import the 'registerUser' function from our helper file 'firebase.js'.
+        // This keeps this file clean and separates the UI logic from the Database logic.
+        import { registerUser, auth } from "./firebase.js";
+
+        // 2. GET HTML ELEMENTS
+        // We store references to the HTML elements so we can read values or change text.
+        const signupEmail = document.getElementById("signupEmail");
+        const signupPassword = document.getElementById("signupPassword");
+        const msg = document.getElementById("msg"); // The paragraph tag for error/success messages
+        const singupsubmit = document.getElementById("singupsubmit"); // The button
+
+        // 3. ADD EVENT LISTENER
+        // This function runs every time the "Sign Up" button is clicked.
+        singupsubmit.addEventListener("click", async () => {
+            
+            // Get the current values typed into the boxes and remove extra spaces (trim)
+            const email = signupEmail.value.trim();
+            const password = signupPassword.value.trim();
+            
+            // Reset the message box and disable the button to prevent double-clicking
+            msg.textContent = "";
+            singupsubmit.disabled = true;
+            singupsubmit.textContent = "Signing Up...";
+
+            // 4. ATTEMPT TO REGISTER (Try/Catch Block)
+            try {
+                // Call the helper function to create the user in Firebase
+                // 'await' means code pauses here until Firebase responds (Success or Fail)
+                const userCredential = await registerUser(email, password);
+                
+                // --- SUCCESS ---
+                // If we get here, the user was created successfully.
+                msg.textContent = "Sign up successful! Redirecting...";
+                
+                // Change text color to Green
+                msg.classList.remove("text-red-600");
+                msg.classList.add("text-green-600");
+
+                // REDIRECT LOGIC
+                // Wait 1.5 seconds (1500ms) so the user can read the success message,
+                // then send them to the Profile Creation page.
+                setTimeout(() => {
+                    window.location.href = "createprofile.html";
+                }, 1500);
+
+            } catch (error) {
+                // --- FAILURE ---
+                // If registerUser() fails, the code jumps here.
+                
+                // Change text color to Red
+                msg.classList.remove("text-green-600");
+                msg.classList.add("text-red-600");
+
+                // Check the specific error code from Firebase to give a helpful message
+                if (error.message.includes("at least 6 characters")) {
+                    msg.textContent = "Password must be at least 6 characters.";
+                } else if (error.code === "auth/email-already-in-use") {
+                    msg.textContent = "This email is already in use.";
+                } else if (error.code === "auth/invalid-email") {
+                    msg.textContent = "Please enter a valid email address.";
+                } else {
+                    // Generic error message for unknown issues
+                    msg.textContent = "Signup failed. Please try again.";
+                }
+                
+                // Re-enable the button so they can try again
+                singupsubmit.disabled = false;
+                singupsubmit.textContent = "Sign Up";
+            }
+        });
+    </script>
+
+</body>
+</html>
