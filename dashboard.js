@@ -34,6 +34,7 @@ const logoutBtn = document.getElementById("logoutBtn");
 // Mobile Menu
 const mobileMenuButton = document.getElementById("mobileMenuButton");
 const mobileMenu = document.getElementById("mobileMenu");
+const mobileBackdrop = document.getElementById("mobileMenuBackdrop");
 const mobileBackBtn = document.getElementById("mobileBackBtn");
 const mobileLoginBtn = document.getElementById("mobileLoginBtn");
 const mobileUserDropdown = document.getElementById("mobileUserDropdown");
@@ -131,9 +132,32 @@ function showMessage(text, type = "info") {
 // Handling clicks for dropdowns and mobile menu.
 // =======================================================
 navLoginBtn?.addEventListener("click", (e) => { e.stopPropagation(); navUserDropdown?.classList.toggle("hidden"); });
-mobileMenuButton?.addEventListener("click", () => mobileMenu?.classList.remove("translate-x-full"));
-mobileBackBtn?.addEventListener("click", () => mobileMenu?.classList.add("translate-x-full"));
 
+const toggleMobileMenu = (show) => {
+    if (show) {
+        mobileBackdrop.classList.remove("hidden");
+        setTimeout(() => {
+            mobileBackdrop.classList.replace("opacity-0", "opacity-100");
+            mobileMenu.classList.remove("translate-x-full");
+        }, 10);
+    } else {
+        mobileBackdrop.classList.replace("opacity-100", "opacity-0");
+        mobileMenu.classList.add("translate-x-full");
+        setTimeout(() => mobileBackdrop.classList.add("hidden"), 300);
+    }
+};
+
+if (mobileMenuButton) {
+    mobileMenuButton.addEventListener('click', () => toggleMobileMenu(true));
+}
+
+if (mobileBackBtn) {
+    mobileBackBtn.addEventListener('click', () => toggleMobileMenu(false));
+}
+
+if (mobileBackdrop) {
+    mobileBackdrop.addEventListener('click', () => toggleMobileMenu(false));
+}
 // Close dropdowns when clicking anywhere else
 window.addEventListener("click", () => { navUserDropdown?.classList.add("hidden"); mobileUserDropdown?.classList.add("hidden"); });
 

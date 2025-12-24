@@ -38,6 +38,7 @@ const navUserEmail = document.getElementById("navUserEmail");      // Email disp
 const mobileUserName = document.getElementById("mobileUserName");
 const mobileMenuButton = document.getElementById("mobileMenuButton");
 const mobileMenu = document.getElementById("mobileMenu");
+const mobileBackdrop = document.getElementById("mobileMenuBackdrop");
 const mobileBackBtn = document.getElementById("mobileBackBtn");
 const mobileLogoutBtn = document.getElementById("mobileLogoutBtn");
 
@@ -50,18 +51,30 @@ const createProfileBtn = document.getElementById("createProfileBtn");
 // 4. MOBILE MENU LOGIC
 // Handles sliding the mobile menu in and out.
 // =======================================================
+const toggleMobileMenu = (show) => {
+    if (show) {
+        mobileBackdrop.classList.remove("hidden");
+        setTimeout(() => {
+            mobileBackdrop.classList.replace("opacity-0", "opacity-100");
+            mobileMenu.classList.remove("translate-x-full");
+        }, 10);
+    } else {
+        mobileBackdrop.classList.replace("opacity-100", "opacity-0");
+        mobileMenu.classList.add("translate-x-full");
+        setTimeout(() => mobileBackdrop.classList.add("hidden"), 300);
+    }
+};
+
 if (mobileMenuButton) {
-    mobileMenuButton.addEventListener('click', () => {
-        // Remove 'translate-x-full' to slide menu INTO view
-        mobileMenu.classList.remove('translate-x-full');
-    });
+    mobileMenuButton.addEventListener('click', () => toggleMobileMenu(true));
 }
 
 if (mobileBackBtn) {
-    mobileBackBtn.addEventListener('click', () => {
-        // Add 'translate-x-full' to slide menu OUT of view
-        mobileMenu.classList.add('translate-x-full');
-    });
+    mobileBackBtn.addEventListener('click', () => toggleMobileMenu(false));
+}
+
+if (mobileBackdrop) {
+    mobileBackdrop.addEventListener('click', () => toggleMobileMenu(false));
 }
 
 // =======================================================

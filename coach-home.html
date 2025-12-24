@@ -94,60 +94,87 @@
                     </path>
                 </svg>
             </button>
-
-            <!-- Mobile Menu Overlay -->
-            <div id="mobileMenu" class="fixed inset-0 bg-[var(--background)] z-[101] flex flex-col items-center justify-center space-y-8 font-bold text-2xl text-[var(--primary)] 
-                translate-x-full transition-transform duration-500 ease-in-out md:hidden">
-
-                <!-- Decoration Circles -->
-                <div class="absolute top-[-10%] left-[-10%] w-64 h-64 bg-[var(--primary)]/10 rounded-full blur-3xl">
-                </div>
-                <div
-                    class="absolute bottom-[-10%] right-[-10%] w-64 h-64 bg-[var(--secondary)]/10 rounded-full blur-3xl">
-                </div>
-
-                <!-- Close Button -->
-                <button id="mobileBackBtn"
-                    class="absolute top-6 right-6 text-[var(--primary)] p-4 hover:rotate-90 transition-transform duration-300">
-                    <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
-                            d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
-                </button>
-
-                <a href="coach-home.html" class="relative group py-2 text-[var(--primary)]">
-                    <span>Home</span>
-                    <span
-                        class="absolute bottom-0 left-0 w-full h-1 bg-[var(--primary)] transition-all duration-300"></span>
-                </a>
-                <a href="dashboard.html" class="relative group py-2">
-                    <span>Dashboard</span>
-                    <span
-                        class="absolute bottom-0 left-0 w-0 h-1 bg-[var(--primary)] transition-all duration-300 group-hover:w-full"></span>
-                </a>
-                <a href="#" class="relative group py-2">
-                    <span>Event</span>
-                    <span
-                        class="absolute bottom-0 left-0 w-0 h-1 bg-[var(--primary)] transition-all duration-300 group-hover:w-full"></span>
-                </a>
-
-                <div class="w-full max-w-xs border-t border-[var(--primary)]/20 mt-4 pt-8 flex flex-col items-center">
-                    <div class="mb-6 text-center">
-                        <p class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">Coach</p>
-                        <p id="mobileUserName" class="text-xl font-extrabold text-[var(--primary)]"></p>
-                    </div>
-                    <button id="mobileLogoutBtn"
-                        class="w-full px-8 py-4 rounded-full bg-red-600 text-white hover:bg-red-700 transition-all shadow-xl active:scale-95 font-bold text-lg">
-                        Logout
-                    </button>
-                </div>
-
-                <div class="absolute bottom-10 text-sm text-[var(--primary)]/60 font-medium">
-                    Talent Tracker © 2025
-                </div>
-            </div>
         </div>
     </nav>
+
+    <!-- Mobile Menu Sidebar Overlay (Backdrop) -->
+    <div id="mobileMenuBackdrop"
+        class="fixed inset-0 bg-black/50 z-[101] hidden backdrop-blur-sm transition-opacity duration-300 opacity-0">
+    </div>
+
+    <!-- Mobile Menu Sidebar -->
+    <div id="mobileMenu" class="fixed inset-y-0 right-0 w-[80%] max-w-sm bg-white z-[102] flex flex-col shadow-2xl 
+        translate-x-full transition-transform duration-300 ease-in-out md:hidden overflow-y-auto">
+
+        <!-- Sidebar Header -->
+        <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+            <div class="text-xl font-black text-[var(--primary)] tracking-tight">Menu</div>
+            <button id="mobileBackBtn"
+                class="text-gray-400 hover:text-[var(--primary)] p-2 transition-colors focus:outline-none">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12">
+                    </path>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Sidebar Content -->
+        <div class="flex flex-col p-8 space-y-6 flex-grow">
+            <div class="space-y-4">
+                <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Navigation</p>
+                <a href="coach-home.html"
+                    class="flex items-center gap-4 py-3 text-lg font-bold text-[var(--primary)] transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6">
+                        </path>
+                    </svg>
+                    Home
+                </a>
+                <a href="dashboard.html"
+                    class="flex items-center gap-4 py-3 text-lg font-bold text-gray-800 hover:text-[var(--primary)] transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z">
+                        </path>
+                    </svg>
+                    Dashboard
+                </a>
+                <a href="#"
+                    class="flex items-center gap-4 py-3 text-lg font-bold text-gray-800 hover:text-[var(--primary)] transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z">
+                        </path>
+                    </svg>
+                    Event
+                </a>
+            </div>
+
+            <div class="pt-6 border-t border-gray-100">
+                <div class="mb-6">
+                    <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Signed in as
+                    </p>
+                    <p id="mobileUserName" class="text-xl font-black text-[var(--primary)] break-words leading-tight">
+                    </p>
+                </div>
+                <button id="mobileLogoutBtn"
+                    class="w-full py-4 rounded-xl bg-red-50 text-red-600 hover:bg-red-100 transition-all font-bold text-sm border border-red-100 uppercase tracking-wide flex items-center justify-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
+                        </path>
+                    </svg>
+                    Logout
+                </button>
+            </div>
+        </div>
+
+        <!-- Sidebar Footer -->
+        <div class="p-8 text-center text-xs text-gray-400 font-medium bg-gray-50 border-t border-gray-100">
+            Talent Tracker © 2025
+        </div>
+    </div>
 
     <section id="heroSection" class="pt-32 pb-16 max-w-7xl mx-auto px-6">
         <div class="grid grid-cols-1 lg:grid-cols-10 gap-12 items-center">
