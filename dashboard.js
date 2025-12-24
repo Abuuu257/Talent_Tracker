@@ -34,7 +34,7 @@ const logoutBtn = document.getElementById("logoutBtn");
 // Mobile Menu
 const mobileMenuButton = document.getElementById("mobileMenuButton");
 const mobileMenu = document.getElementById("mobileMenu");
-const mobileMenuBackBtn = document.getElementById("mobileMenuBackBtn");
+const mobileBackBtn = document.getElementById("mobileBackBtn");
 const mobileLoginBtn = document.getElementById("mobileLoginBtn");
 const mobileUserDropdown = document.getElementById("mobileUserDropdown");
 const mobileUserEmail = document.getElementById("mobileUserEmail");
@@ -132,8 +132,7 @@ function showMessage(text, type = "info") {
 // =======================================================
 navLoginBtn?.addEventListener("click", (e) => { e.stopPropagation(); navUserDropdown?.classList.toggle("hidden"); });
 mobileMenuButton?.addEventListener("click", () => mobileMenu?.classList.remove("translate-x-full"));
-mobileMenuBackBtn?.addEventListener("click", () => mobileMenu?.classList.add("translate-x-full"));
-mobileLoginBtn?.addEventListener("click", (e) => { e.stopPropagation(); mobileUserDropdown?.classList.toggle("hidden"); });
+mobileBackBtn?.addEventListener("click", () => mobileMenu?.classList.add("translate-x-full"));
 
 // Close dropdowns when clicking anywhere else
 window.addEventListener("click", () => { navUserDropdown?.classList.add("hidden"); mobileUserDropdown?.classList.add("hidden"); });
@@ -166,10 +165,9 @@ onAuthStateChanged(auth, async (user) => {
     let name = data.username || user.displayName || user.email.split("@")[0];
     if (name.includes("@")) name = user.email.split("@")[0]; // Force no @ in name
 
-    if (navLoginBtn) navLoginBtn.textContent = name;
-    if (mobileLoginBtn) mobileLoginBtn.textContent = name;
+    if (document.getElementById("navBtnText")) document.getElementById("navBtnText").textContent = name;
+    if (mobileUserName) mobileUserName.textContent = name;
     if (navUserEmail) navUserEmail.textContent = user.email;
-    if (mobileUserEmail) mobileUserEmail.textContent = user.email;
 
     // Start Loading Data
     try {

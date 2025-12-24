@@ -67,76 +67,110 @@
 <body class="min-h-screen overflow-x-hidden">
 
   <!-- NAVBAR -->
-  <nav class="fixed top-0 left-0 w-full bg-[var(--background)] shadow-md z-50">
-    <div class="max-w-7xl mx-auto px-6 py-3 flex justify-between items-center relative">
+  <nav
+    class="fixed top-0 left-0 w-full bg-[var(--background)]/80 backdrop-blur-md shadow-sm z-[100] border-b border-white/10">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
       <!-- Logo -->
-      <div class="text-2xl font-extrabold text-black tracking-wide">Talent Tracker</div>
+      <div class="text-2xl font-extrabold text-[var(--primary)] tracking-tight">Talent Tracker</div>
 
       <!-- Desktop Menu -->
-      <div class="hidden md:flex space-x-8 font-medium text-black items-center">
-        <a href="index.html" class="hover:text-[var(--primary)] transition">Home</a>
-        <a href="#" class="hover:text-[var(--primary)] transition">Event</a>
-        <div class="relative">
+      <div class="hidden md:flex space-x-8 font-semibold text-black items-center">
+        <a href="index.html" class="hover:text-[var(--primary)] transition-colors duration-200">Home</a>
+        <a href="#" class="hover:text-[var(--primary)] transition-colors duration-200">Event</a>
+        <div class="relative group">
           <button id="navLoginBtn"
-            class="px-4 py-2 rounded-3xl bg-[var(--secondary)] text-white hover:bg-[var(--primary)] transition font-semibold shadow-md">
+            class="px-6 py-2 rounded-full bg-[var(--secondary)] text-white hover:bg-[var(--primary)] transition-all duration-300 font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
             Login
           </button>
 
           <!-- DROPDOWN -->
-          <div id="logoutDropdown" class="absolute right-0 mt-2 w-32 bg-white rounded-lg shadow-lg hidden z-50">
-            <button id="logoutBtn" class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100 rounded-lg">
+          <div id="logoutDropdown"
+            class="absolute right-0 mt-3 w-40 bg-white rounded-xl shadow-2xl hidden z-50 overflow-hidden border border-gray-100">
+            <button id="logoutBtn"
+              class="w-full text-left px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition-colors duration-200 font-bold">
               Logout
             </button>
           </div>
         </div>
-
       </div>
 
-      <!-- Mobile Hamburger -->
-      <button id="mobileMenuButton" class="md:hidden text-3xl font-bold">&#9776;</button>
+      <!-- Mobile Hamburger Button -->
+      <button id="mobileMenuButton"
+        class="md:hidden text-[var(--primary)] focus:outline-none p-2 rounded-lg hover:bg-white/20 transition-colors"
+        aria-label="Toggle Menu">
+        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path id="hamburgerIcon" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+            d="M4 6h16M4 12h16m-7 6h7"></path>
+        </svg>
+      </button>
 
-      <!-- Mobile Menu -->
-      <div id="mobileMenu" class="md:hidden flex flex-col items-center space-y-4 font-medium text-black 
-                absolute right-0 top-14 bg-white w-56 py-4 rounded-xl shadow-xl 
-                translate-x-full transition-transform duration-300 z-50" style="background-color: var(--background);">
+      <!-- Mobile Menu Overlay -->
+      <div id="mobileMenu" class="fixed inset-0 bg-[var(--background)] z-[101] flex flex-col items-center justify-center space-y-8 font-bold text-2xl text-[var(--primary)] 
+                translate-x-full transition-transform duration-500 ease-in-out md:hidden">
 
-        <!-- Back Button -->
-        <button id="mobileBackBtn" class="absolute right-4 top-2 text-2xl font-bold text-black">
-          →
+        <!-- Decoration Circles -->
+        <div class="absolute top-[-10%] left-[-10%] w-64 h-64 bg-[var(--primary)]/10 rounded-full blur-3xl"></div>
+        <div class="absolute bottom-[-10%] right-[-10%] w-64 h-64 bg-[var(--secondary)]/10 rounded-full blur-3xl"></div>
+
+        <!-- Close Button -->
+        <button id="mobileBackBtn"
+          class="absolute top-6 right-6 text-[var(--primary)] p-4 hover:rotate-90 transition-transform duration-300">
+          <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
         </button>
 
-        <!-- Menu Items -->
-        <a href="index.html" class="hover:text-[var(--primary)] w-full text-center py-2">Home</a>
-        <a href="#" class="hover:text-[var(--primary)] w-full text-center py-2">Event</a>
-        <button id="mobileLoginBtn"
-          class="w-3/4 px-4 py-2 rounded-3xl bg-[var(--secondary)] text-white hover:bg-[var(--primary)] transition font-semibold shadow-md mt-2">
-          Login
-        </button>
+        <!-- Menu Navigation Items -->
+        <a href="index.html" class="relative group py-2">
+          <span>Home</span>
+          <span
+            class="absolute bottom-0 left-0 w-0 h-1 bg-[var(--primary)] transition-all duration-300 group-hover:w-full"></span>
+        </a>
+        <a href="#" class="relative group py-2">
+          <span>Event</span>
+          <span
+            class="absolute bottom-0 left-0 w-0 h-1 bg-[var(--primary)] transition-all duration-300 group-hover:w-full"></span>
+        </a>
+
+        <div class="w-full flex justify-center pt-8 px-10">
+          <button id="mobileLoginBtn"
+            class="w-full max-w-xs py-5 rounded-2xl bg-[var(--secondary)] text-white hover:bg-[var(--primary)] transition-all shadow-xl active:scale-95 text-xl font-black uppercase tracking-wider">
+            Login
+          </button>
+        </div>
+
+        <!-- Footer in Mobile Menu -->
+        <div class="absolute bottom-10 text-sm text-[var(--primary)]/60 font-medium">
+          Talent Tracker © 2025
+        </div>
       </div>
     </div>
   </nav>
 
   <!-- HERO -->
-  <section id="heroSection" class="pt-32 pb-12 max-w-7xl mx-auto px-4">
+  <section id="heroSection" class="pt-32 pb-12 max-w-7xl mx-auto px-6">
     <div class="grid grid-cols-1 lg:grid-cols-10 gap-12 items-center">
-      <div class="lg:col-span-5 animate-fade text-center">
-        <h1
-          class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-[var(--primary)] leading-tight mb-6 text-center">
-          Track Your Talent Unlock Your Potential.
+      <div class="lg:col-span-5 text-center lg:text-left">
+        <h1 class="text-4xl sm:text-5xl lg:text-7xl font-extrabold text-[var(--primary)] leading-tight mb-8">
+          Track Your Talent <span class="text-white drop-shadow-md">Unlock</span> Your Potential.
         </h1>
-        <p class="text-base sm:text-xl text-black opacity-90 font-medium mb-10 text-left pl-10">
-          Your journey, your progress, and your performance<br>
-          all in one place. Built to help athletes train smarter,<br>
-          stay consistent, and reach their true potential.
+        <p class="text-lg sm:text-xl text-black/80 font-medium mb-12 max-w-xl mx-auto lg:mx-0">
+          Your journey, your progress, and your performance all in one place. Built to help athletes train smarter, stay
+          consistent, and reach their true potential.
         </p>
         <button id="getStartBtn"
-          class="bg-[var(--secondary)] text-white px-10 py-4 rounded-full shadow-xl hover:bg-[var(--primary)] transition font-bold text-lg block mx-auto text-center">
+          class="bg-[var(--secondary)] text-white px-12 py-5 rounded-full shadow-2xl hover:bg-[var(--primary)] transition-all duration-300 font-bold text-xl transform hover:scale-105 active:scale-95">
           Get Started
         </button>
       </div>
-      <div class="lg:col-span-5 flex justify-center lg:justify-end animate-fade pt-12 lg:pt-0 -mt-0 lg:-mt-12 relative">
-        <img src="assets/Will’s Track Photo.jpeg"
-          class="w-full max-w-md lg:max-w-none lg:h-[525px] object-cover rounded-3xl shadow-2xl" />
+      <div class="lg:col-span-5 flex justify-center lg:justify-end pt-8 lg:pt-0">
+        <div class="relative group">
+          <div
+            class="absolute -inset-1 bg-gradient-to-r from-[var(--secondary)] to-[var(--primary)] rounded-[2rem] blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200">
+          </div>
+          <img src="assets/Will’s Track Photo.jpeg"
+            class="relative w-full max-w-md lg:max-w-lg h-auto lg:h-[550px] object-cover rounded-[2rem] shadow-2xl transform transition duration-500 hover:scale-[1.02]" />
+        </div>
       </div>
     </div>
   </section>
@@ -202,63 +236,97 @@
   <script type="module" src="index.js"></script>
 
   <!-- ROLE BASED LOGIN MODAL -->
-  <div id="loginModal" class="fixed inset-0 bg-black/50 flex items-center justify-center hidden z-50">
-    <div class="bg-white w-[520px] rounded-xl overflow-hidden flex">
+  <div id="loginModal"
+    class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center hidden z-[200] p-4 overflow-y-auto">
+    <div
+      class="bg-white w-full max-w-4xl rounded-[2rem] md:rounded-[3rem] overflow-hidden flex flex-col md:flex-row shadow-2xl transform transition-all my-auto">
 
-      <div class="w-1/3 bg-[#2E5F9E] text-white p-5 space-y-4">
-        <h3 class="font-bold text-lg mb-4">Login as</h3>
-        <button id="role-athlete" onclick="switchRole('athlete')"
-          class="w-full py-2 rounded bg-white text-[#2E5F9E] font-semibold">Athlete</button>
-        <button id="role-coach" onclick="switchRole('coach')"
-          class="w-full py-2 rounded bg-white text-[#2E5F9E] font-semibold">Coach</button>
-        <button id="role-federation" onclick="switchRole('federation')"
-          class="w-full py-2 rounded bg-white text-[#2E5F9E] font-semibold">Federation</button>
+      <!-- Sidebar Roles -->
+      <div
+        class="w-full md:w-1/3 bg-gradient-to-br from-[#2E5F9E] to-[#1a3a63] text-white p-6 md:p-10 flex flex-col justify-center border-b md:border-b-0 md:border-r border-white/10">
+        <h3
+          class="font-black text-xl md:text-2xl mb-6 md:mb-8 text-center md:text-left uppercase tracking-widest opacity-90">
+          Login as</h3>
+        <div
+          class="flex flex-row md:flex-col gap-3 md:space-y-4 overflow-x-auto md:overflow-x-visible pb-2 md:pb-0 px-1 md:px-0 no-scrollbar">
+          <button id="role-athlete" onclick="switchRole('athlete')"
+            class="role-btn whitespace-nowrap md:whitespace-normal px-6 md:px-0 py-3 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-bold transition-all border border-white/20 active:scale-95 flex-1 md:flex-none">Athlete</button>
+          <button id="role-coach" onclick="switchRole('coach')"
+            class="role-btn whitespace-nowrap md:whitespace-normal px-6 md:px-0 py-3 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-bold transition-all border border-white/20 active:scale-95 flex-1 md:flex-none">Coach</button>
+          <button id="role-federation" onclick="switchRole('federation')"
+            class="role-btn whitespace-nowrap md:whitespace-normal px-6 md:px-0 py-3 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-bold transition-all border border-white/20 active:scale-95 flex-1 md:flex-none">Federation</button>
+        </div>
       </div>
 
-      <div class="w-2/3 p-8 relative bg-white">
+      <!-- Login Form Content -->
+      <div class="w-full md:w-2/3 p-8 md:p-14 relative bg-white flex flex-col justify-center">
+        <!-- Close Button -->
         <button onclick="closeLogin()"
-          class="absolute top-4 right-5 text-xl text-gray-500 hover:text-black">&times;</button>
+          class="absolute top-6 right-6 p-2 text-gray-400 hover:text-gray-800 hover:bg-gray-100 rounded-full transition-all"
+          aria-label="Close">
+          <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
 
-        <h2 id="loginTitle" class="text-2xl font-bold text-gray-800 mb-6">
-          Athlete Login
-        </h2>
+        <div class="max-w-md mx-auto w-full">
+          <h2 id="loginTitle" class="text-3xl md:text-4xl font-black text-gray-900 mb-2 tracking-tight">
+            Athlete Login
+          </h2>
+          <p class="text-gray-500 mb-10 font-medium">Please enter your details below</p>
 
-        <form class="space-y-4" onsubmit="return false;">
-          <input id="login-identifier" type="text" placeholder="Username" class="w-full border border-gray-300 rounded-lg px-4 py-2
-                 focus:outline-none focus:ring-2 focus:ring-[#2E5F9E]" />
+          <form class="space-y-6" onsubmit="return false;">
+            <div class="space-y-2">
+              <label class="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Username / Email</label>
+              <input id="login-identifier" type="text" placeholder="JohnDoe or john@example.com" class="w-full border-2 border-gray-100 rounded-2xl px-6 py-4
+                     focus:outline-none focus:border-[#2E5F9E] transition-all bg-gray-50 font-semibold" />
+            </div>
 
-          <input id="login-password" type="password" placeholder="Password" class="w-full border border-gray-300 rounded-lg px-4 py-2
-                 focus:outline-none focus:ring-2 focus:ring-[#2E5F9E]" />
+            <div class="space-y-2">
+              <label class="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Password</label>
+              <input id="login-password" type="password" placeholder="••••••••" class="w-full border-2 border-gray-100 rounded-2xl px-6 py-4
+                     focus:outline-none focus:border-[#2E5F9E] transition-all bg-gray-50 font-semibold" />
+            </div>
 
-          <p id="loginError" class="text-sm text-red-600 hidden"></p>
+            <div id="loginError"
+              class="bg-red-50 text-red-600 text-sm py-3 px-4 rounded-xl font-bold hidden flex items-center gap-2">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+              <span>Error message here</span>
+            </div>
 
-          <button id="loginBtn" type="button" class="w-full bg-[#2E5F9E] hover:bg-[#244F85]
-                 text-white font-semibold py-2 rounded-lg transition">
-            Login
-          </button>
-        </form>
+            <button id="loginBtn" type="button"
+              class="w-full bg-[#2E5F9E] hover:bg-[#1a3a63]
+                   text-white font-black py-5 rounded-2xl shadow-xl hover:shadow-[#2E5F9E]/30 transition-all transform active:scale-[0.97] uppercase tracking-wider">
+              Login
+            </button>
+          </form>
 
-        <div class="mt-8 text-center">
-          <p class="text-sm text-gray-600 mb-3">Don’t have an account?</p>
+          <div class="mt-12 text-center">
+            <div class="relative mb-8">
+              <div class="absolute inset-0 flex items-center">
+                <div class="w-full border-t border-gray-100"></div>
+              </div>
+              <div class="relative flex justify-center text-xs uppercase"><span
+                  class="bg-white px-4 text-gray-400 font-bold tracking-widest">New Here?</span></div>
+            </div>
 
-          <div class="flex justify-center gap-3">
-            <a href="signup-athlete.html" class="px-4 py-2 rounded-full border border-[#2E5F9E]
-                    text-[#2E5F9E] font-medium
-                    hover:bg-[#2E5F9E] hover:text-white transition">
-              Athlete
-            </a>
-
-            <a href="signup-coach.html" class="px-4 py-2 rounded-full border border-[#2E5F9E]
-                    text-[#2E5F9E] font-medium
-                    hover:bg-[#2E5F9E] hover:text-white transition">
-              Coach
-            </a>
-
-            <a href="signup-federation.html" class="px-4 py-2 rounded-full border border-[#2E5F9E]
-                    text-[#2E5F9E] font-medium
-                    hover:bg-[#2E5F9E] hover:text-white transition">
-              Federation
-            </a>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <a href="signup-athlete.html" class="px-2 py-3 rounded-xl border-2 border-gray-100
+                        text-gray-900 font-bold text-xs hover:border-[#2E5F9E] hover:text-[#2E5F9E] transition-all">
+                ATHLETE
+              </a>
+              <a href="signup-coach.html" class="px-2 py-3 rounded-xl border-2 border-gray-100
+                        text-gray-900 font-bold text-xs hover:border-[#2E5F9E] hover:text-[#2E5F9E] transition-all">
+                COACH
+              </a>
+              <a href="signup-federation.html" class="px-2 py-3 rounded-xl border-2 border-gray-100
+                        text-gray-900 font-bold text-xs hover:border-[#2E5F9E] hover:text-[#2E5F9E] transition-all">
+                FEDERATION
+              </a>
+            </div>
           </div>
         </div>
       </div>
@@ -289,11 +357,25 @@
       document.getElementById("loginTitle").innerText =
         role.charAt(0).toUpperCase() + role.slice(1) + " Login";
 
+      // Highlight active role button
+      document.querySelectorAll('.role-btn').forEach(btn => {
+        btn.classList.remove('bg-white', 'text-[#2E5F9E]');
+        btn.classList.add('bg-white/10', 'text-white');
+      });
+      const activeBtn = document.getElementById(`role-${role}`);
+      activeBtn.classList.remove('bg-white/10', 'text-white');
+      activeBtn.classList.add('bg-white', 'text-[#2E5F9E]');
+
       // RESET INPUTS & ERRORS
       document.getElementById("login-identifier").value = "";
       document.getElementById("login-password").value = "";
       clearErr();
     };
+
+    // Initialize with athlete role highlighting
+    document.addEventListener('DOMContentLoaded', () => {
+      window.switchRole('athlete');
+    });
 
     // LOADING HELPERS
     const loadingOverlay = document.getElementById("loadingOverlay");
@@ -322,12 +404,11 @@
     const err = document.getElementById("loginError");
 
     function showErr(msg) {
-      err.textContent = msg;
+      err.querySelector('span').textContent = msg;
       err.classList.remove("hidden");
     }
 
     function clearErr() {
-      err.textContent = "";
       err.classList.add("hidden");
     }
 
@@ -373,9 +454,22 @@
         setNavbarUser(savedUser);
       }
 
+      const mobileMenu = document.getElementById("mobileMenu");
+      const mobileMenuBtn = document.getElementById("mobileMenuButton");
+      const mobileBackBtn = document.getElementById("mobileBackBtn");
+
+      mobileMenuBtn?.addEventListener("click", () => {
+        mobileMenu.classList.remove("translate-x-full");
+      });
+
+      mobileBackBtn?.addEventListener("click", () => {
+        mobileMenu.classList.add("translate-x-full");
+      });
+
       const openIfNotLogged = (e) => {
         if (auth.currentUser || localStorage.getItem("tt_username")) return;
         e.preventDefault();
+        mobileMenu.classList.add("translate-x-full"); // Close mobile menu if open
         openLogin();
       };
 

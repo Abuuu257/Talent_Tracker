@@ -66,7 +66,7 @@ function toggleError(id, message) {
 // --- 3. NAVBAR & MOBILE MENU LOGIC ---
 const mobileMenuBtn = document.getElementById("mobileMenuButton");
 const mobileMenu = document.getElementById("mobileMenu");
-const mobileMenuBackBtn = document.getElementById("mobileMenuBackBtn");
+const mobileBackBtn = document.getElementById("mobileBackBtn");
 const navLoginBtn = document.getElementById("navLoginBtn");
 const navUserDropdown = document.getElementById("navUserDropdown");
 const mobileLoginBtn = document.getElementById("mobileLoginBtn");
@@ -74,15 +74,8 @@ const mobileUserDropdown = document.getElementById("mobileUserDropdown");
 
 // Add event listeners ONLY if elements exist (Prevents crashes on different pages)
 if (mobileMenuBtn) mobileMenuBtn.addEventListener("click", () => mobileMenu?.classList.remove("translate-x-full"));
-if (mobileMenuBackBtn) mobileMenuBackBtn.addEventListener("click", () => mobileMenu?.classList.add("translate-x-full"));
+if (mobileBackBtn) mobileBackBtn.addEventListener("click", () => mobileMenu?.classList.add("translate-x-full"));
 if (navLoginBtn) navLoginBtn.addEventListener("click", (e) => { e.stopPropagation(); navUserDropdown?.classList.toggle("hidden"); });
-if (mobileLoginBtn) mobileLoginBtn.addEventListener("click", (e) => { e.stopPropagation(); mobileUserDropdown?.classList.toggle("hidden"); });
-
-// Close menus when clicking outside
-window.addEventListener("click", () => {
-    navUserDropdown?.classList.add("hidden");
-    mobileUserDropdown?.classList.add("hidden");
-});
 
 // --- 4. AUTHENTICATION ---
 onAuthStateChanged(auth, async (user) => {
@@ -95,8 +88,8 @@ onAuthStateChanged(auth, async (user) => {
 
     // Update Navbar with Name
     let name = user.displayName || localStorage.getItem("tt_username") || user.email.split("@")[0];
-    if (navLoginBtn) navLoginBtn.textContent = name;
-    if (mobileLoginBtn) mobileLoginBtn.textContent = name;
+    if (document.getElementById("navBtnText")) document.getElementById("navBtnText").textContent = name;
+    if (document.getElementById("mobileUserName")) document.getElementById("mobileUserName").textContent = name;
 
     // Fill hidden/readonly email fields
     if (document.getElementById("navUserEmail")) document.getElementById("navUserEmail").textContent = user.email;

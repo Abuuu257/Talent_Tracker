@@ -13,26 +13,28 @@ function ensureLoadingUI() {
       .loading-overlay {
         position: fixed;
         inset: 0;
-        background: rgba(255, 255, 255, 0.8);
+        background: rgba(255, 255, 255, 0.4);
+        backdrop-blur: 8px;
         display: flex;
         justify-content: center;
         align-items: center;
         z-index: 9999;
         opacity: 0;
         pointer-events: none;
-        transition: opacity 0.3s ease;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
       }
       .loading-overlay.active {
         opacity: 1;
         pointer-events: auto;
       }
       .spinner {
-        width: 50px;
-        height: 50px;
-        border: 5px solid #f3f3f3;
-        border-top: 5px solid #012A61; /* Primary Color */
+        width: 60px;
+        height: 60px;
+        border: 4px solid rgba(1, 42, 97, 0.1);
+        border-top: 4px solid #012A61;
         border-radius: 50%;
-        animation: spin 1s linear infinite;
+        animation: spin 0.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+        box-shadow: 0 0 15px rgba(1, 42, 97, 0.1);
       }
       @keyframes spin {
         0% { transform: rotate(0deg); }
@@ -80,14 +82,15 @@ function ensureSuccessModalUI() {
       .custom-modal-overlay {
         position: fixed;
         inset: 0;
-        background: rgba(0, 0, 0, 0.6);
+        background: rgba(0, 0, 0, 0.3);
+        backdrop-blur: 4px;
         display: flex;
         justify-content: center;
         align-items: center;
         z-index: 10000;
         opacity: 0;
         pointer-events: none;
-        transition: opacity 0.3s ease;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
       }
       .custom-modal-overlay.active {
         opacity: 1;
@@ -95,31 +98,36 @@ function ensureSuccessModalUI() {
       }
       .custom-modal-box {
         background: white;
-        padding: 2rem;
-        border-radius: 1rem;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-        max-width: 400px;
+        padding: 3rem 2rem;
+        border-radius: 2rem;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        max-width: 450px;
         width: 90%;
         text-align: center;
-        transform: scale(0.9);
-        transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        transform: scale(0.9) translateY(20px);
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
       }
       .custom-modal-overlay.active .custom-modal-box {
-        transform: scale(1);
+        transform: scale(1) translateY(0);
       }
       .custom-modal-btn {
-        margin-top: 1.5rem;
-        background-color: #012A61;
+        margin-top: 2rem;
+        background: linear-gradient(135deg, #012A61 0%, #275A91 100%);
         color: white;
-        padding: 0.75rem 2rem;
-        border-radius: 9999px;
-        font-weight: 600;
+        padding: 1rem 3rem;
+        border-radius: 1rem;
+        font-weight: 700;
         cursor: pointer;
-        transition: background-color 0.2s;
+        transition: all 0.3s ease;
         border: none;
+        box-shadow: 0 10px 15px -3px rgba(1, 42, 97, 0.3);
       }
       .custom-modal-btn:hover {
-        background-color: #275A91;
+        transform: translateY(-2px);
+        box-shadow: 0 20px 25px -5px rgba(1, 42, 97, 0.4);
+      }
+      .custom-modal-btn:active {
+        transform: translateY(0);
       }
     `;
     document.head.appendChild(style);

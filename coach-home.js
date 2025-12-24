@@ -38,7 +38,7 @@ const navUserEmail = document.getElementById("navUserEmail");      // Email disp
 const mobileUserName = document.getElementById("mobileUserName");
 const mobileMenuButton = document.getElementById("mobileMenuButton");
 const mobileMenu = document.getElementById("mobileMenu");
-const mobileMenuBackBtn = document.getElementById("mobileMenuBackBtn");
+const mobileBackBtn = document.getElementById("mobileBackBtn");
 const mobileLogoutBtn = document.getElementById("mobileLogoutBtn");
 
 // Hero Section & Actions
@@ -57,8 +57,8 @@ if (mobileMenuButton) {
     });
 }
 
-if (mobileMenuBackBtn) {
-    mobileMenuBackBtn.addEventListener('click', () => {
+if (mobileBackBtn) {
+    mobileBackBtn.addEventListener('click', () => {
         // Add 'translate-x-full' to slide menu OUT of view
         mobileMenu.classList.add('translate-x-full');
     });
@@ -85,7 +85,8 @@ onAuthStateChanged(auth, async (user) => {
         if (!name) name = user.email.split("@")[0];
 
         // Update Desktop Navbar
-        if (navUserBtn) navUserBtn.textContent = name;
+        const navBtnText = document.getElementById("navBtnText");
+        if (navBtnText) navBtnText.textContent = name;
         if (navUserEmail) navUserEmail.textContent = user.email;
 
         // Update Mobile Menu
