@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Coach Sign Up</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Tailwind -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primaryBg: '#B7D3D7',
+                        secondaryBg: '#DCEBEE',
+                        primaryBlue: '#0B2E5F',
+                        accentBlue: '#2E5F9E',
+                        accentBlueHover: '#244F85'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+
+<body class="min-h-screen bg-primaryBg flex items-center justify-center px-4">
+
+    <div class="w-full max-w-md bg-secondaryBg rounded-2xl shadow-xl p-8">
+
+        <h1 class="text-3xl font-extrabold text-primaryBlue text-center mb-2">
+            Coach Registration
+        </h1>
+
+        <p class="text-center text-gray-600 mb-6">
+            Connect with talent and build champions
+        </p>
+
+        <form id="signupForm" class="space-y-4">
+
+            <div>
+                <label class="text-sm font-semibold text-primaryBlue">Username</label>
+                <input id="username" type="text" required class="w-full mt-1 px-4 py-2 rounded-lg border border-gray-300
+                 focus:outline-none focus:ring-2 focus:ring-accentBlue" />
+            </div>
+
+            <div>
+                <label class="text-sm font-semibold text-primaryBlue">Email</label>
+                <input id="email" type="email" required class="w-full mt-1 px-4 py-2 rounded-lg border border-gray-300
+                 focus:outline-none focus:ring-2 focus:ring-accentBlue" />
+            </div>
+
+            <div>
+                <label class="text-sm font-semibold text-primaryBlue">Password</label>
+                <input id="password" type="password" required class="w-full mt-1 px-4 py-2 rounded-lg border border-gray-300
+                 focus:outline-none focus:ring-2 focus:ring-accentBlue" />
+            </div>
+
+            <!-- ERROR MESSAGE -->
+            <p id="signupError" class="text-sm text-red-600 hidden"></p>
+
+            <button type="submit" class="w-full bg-accentBlue text-white py-2 rounded-lg
+               hover:bg-accentBlueHover transition font-semibold">
+                Create Coach Account
+            </button>
+        </form>
+
+        <p class="text-sm text-center mt-6 text-gray-600">
+            Already have an account?
+            <a href="index.html" class="font-semibold text-primaryBlue underline">
+                Login
+            </a>
+        </p>
+    </div>
+
+    <script type="module" src="signup-coach.js"></script>
+</body>
+
+</html>

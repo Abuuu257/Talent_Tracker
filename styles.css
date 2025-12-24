@@ -1,0 +1,128 @@
+/* =======================================================
+   TALENT TRACKER - GLOBAL STYLES
+   Shared styles for consistent design across all pages
+   ======================================================= */
+
+/* CSS Variables for Theme Colors */
+:root {
+  --primary: #012A61;
+  --secondary: #275A91;
+  --highlight: #FDC787;
+  --background: #A5C5CC;
+  --accent: #977086;
+}
+
+/* Base Styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Montserrat", sans-serif;
+  background-color: var(--background);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Mobile-First Responsive Typography */
+h1 {
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  line-height: 1.2;
+}
+
+h2 {
+  font-size: clamp(1.5rem, 4vw, 2.5rem);
+  line-height: 1.3;
+}
+
+h3 {
+  font-size: clamp(1.25rem, 3vw, 2rem);
+  line-height: 1.4;
+}
+
+p {
+  font-size: clamp(0.875rem, 2vw, 1.125rem);
+  line-height: 1.6;
+}
+
+/* Smooth Transitions */
+a, button {
+  transition: all 0.3s ease;
+}
+
+/* Focus States for Accessibility */
+a:focus, button:focus, input:focus, textarea:focus {
+  outline: 2px solid var(--secondary);
+  outline-offset: 2px;
+}
+
+/* Mobile Menu Optimizations */
+@media (max-width: 768px) {
+  nav {
+    padding: 0.75rem 1rem;
+  }
+  
+  .mobile-menu {
+    max-height: calc(100vh - 60px);
+    overflow-y: auto;
+  }
+}
+
+/* Touch-Friendly Buttons */
+button, .btn {
+  min-height: 44px;
+  min-width: 44px;
+  cursor: pointer;
+}
+
+/* Prevent Text Selection on Buttons */
+button {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Image Optimization */
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Loading States */
+.loading {
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+/* Utility Classes */
+.container {
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+@media (min-width: 640px) {
+  .container {
+    padding: 0 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .container {
+    padding: 0 2rem;
+  }
+}
+
+/* Smooth Scroll */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Prevent Horizontal Scroll */
+body, html {
+  overflow-x: hidden;
+  width: 100%;
+}

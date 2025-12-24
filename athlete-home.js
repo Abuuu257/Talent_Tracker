@@ -4,6 +4,7 @@
 // =======================================================
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
+import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
 
 // =======================================================
 // 2. FIREBASE CONFIGURATION
@@ -21,6 +22,7 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
+const db = getFirestore(app);
 
 // =======================================================
 // 3. DOM ELEMENT SELECTION
@@ -67,22 +69,38 @@ if (mobileMenuBackBtn) {
 // This runs automatically when the page loads to check
 // if a user is logged in.
 // =======================================================
-onAuthStateChanged(auth, (user) => {
+onAuthStateChanged(auth, async (user) => {
     if (user) {
         // --- USER IS LOGGED IN ---
-        
-        // Extract Name from Email (e.g., "john@gmail.com" -> "john")
-        const name = user.email.substring(0, user.email.indexOf("@"));
-        
+
+        // 1. Check Profile Existence & Show/Hide Dashboard Link
+        const navDashboardLink = document.getElementById("navDashboardLink");
+        const mobileDashboardLink = document.getElementById("mobileDashboardLink");
+
+        try {
+            const docRef = doc(db, "athletes", user.uid);
+            const docSnap = await getDoc(docRef);
+
+            if (docSnap.exists()) {
+                if (navDashboardLink) navDashboardLink.classList.remove("hidden");
+                if (mobileDashboardLink) mobileDashboardLink.classList.remove("hidden");
+            }
+        } catch (err) {
+            console.error("Error checking profile:", err);
+        }
+
+        // Use Display Name (set during registration) or fallback to Firestore/LocalStorage if needed
+        const name = user.displayName || localStorage.getItem("tt_username") || user.email.split("@")[0];
+
         // Update Desktop Navbar
-        if(navUserBtn) navUserBtn.textContent = name;
-        if(navUserEmail) navUserEmail.textContent = user.email;
-        
+        if (navUserBtn) navUserBtn.textContent = name;
+        if (navUserEmail) navUserEmail.textContent = user.email;
+
         // Update Mobile Menu
-        if(mobileUserName) mobileUserName.textContent = name;
+        if (mobileUserName) mobileUserName.textContent = name;
 
         // Update Hero Section Welcome Message
-        if(heroUserDisplay) heroUserDisplay.textContent = name;
+        if (heroUserDisplay) heroUserDisplay.textContent = name;
 
     } else {
         // --- USER IS NOT LOGGED IN ---
@@ -116,7 +134,7 @@ window.addEventListener('click', () => {
 
 // "Create Profile" Button
 // Redirects user to the form page to fill in their details
-if(createProfileBtn) {
+if (createProfileBtn) {
     createProfileBtn.addEventListener("click", () => {
         window.location.href = "createprofile.html";
     });
@@ -127,6 +145,8 @@ if(createProfileBtn) {
 const handleLogout = async () => {
     try {
         await signOut(auth);
+        localStorage.removeItem("tt_username");
+        localStorage.removeItem("tt_role");
         window.location.href = "index.html";
     } catch (error) {
         console.error("Logout Error", error);
@@ -134,5 +154,5 @@ const handleLogout = async () => {
 };
 
 // Attach logout logic to both Desktop and Mobile buttons
-if(logoutBtn) logoutBtn.addEventListener("click", handleLogout);
-if(mobileLogoutBtn) mobileLogoutBtn.addEventListener("click", handleLogout);
+if (logoutBtn) logoutBtn.addEventListener("click", handleLogout);
+if (mobileLogoutBtn) mobileLogoutBtn.addEventListener("click", handleLogout);

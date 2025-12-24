@@ -1,0 +1,39 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper function to check if the user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Helper function to check if the user is accessing their own document
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+
+    // USERS (Keep for legacy or generic access if needed)
+    match /users/{userId} {
+      allow read: if true;
+      allow write: if isOwner(userId);
+    }
+
+    // ATHLETES
+    match /athletes/{userId} {
+      allow read: if true; // Required for username uniqueness check before signup
+      allow write: if isOwner(userId); // Only the athlete can create/update their profile
+    }
+
+    // COACHES
+    match /coaches/{userId} {
+      allow read: if true;
+      allow write: if isOwner(userId);
+    }
+
+    // FEDERATIONS
+    match /federations/{userId} {
+      allow read: if true;
+      allow write: if isOwner(userId);
+    }
+  }
+}

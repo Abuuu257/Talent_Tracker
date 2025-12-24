@@ -11,6 +11,8 @@ import {
   getDocs
 } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
 
+import { showLoading, hideLoading, showSuccessModal } from "./ui-utils.js";
+
 const form = document.getElementById("signupForm");
 const errorText = document.getElementById("signupError");
 
@@ -49,9 +51,10 @@ form.addEventListener("submit", async (e) => {
   }
 
   try {
+    showLoading();
     // 1️⃣ CHECK USERNAME UNIQUENESS
     const usernameQuery = query(
-      collection(db, "users"),
+      collection(db, "athletes"),
       where("username", "==", username)
     );
     const usernameSnap = await getDocs(usernameQuery);
@@ -61,31 +64,23 @@ form.addEventListener("submit", async (e) => {
       return;
     }
 
-    // 2️⃣ CHECK EMAIL UNIQUENESS
-    const emailQuery = query(
-      collection(db, "users"),
-      where("email", "==", email)
-    );
-    const emailSnap = await getDocs(emailQuery);
-
-    if (!emailSnap.empty) {
-      showError("Email already registered.");
-      return;
-    }
+    // 2️⃣ (OMITTED) EMAIL UNIQUENESS IS HANDLED BY FIREBASE AUTH AUTOMATICALLY
 
     // 3️⃣ CREATE FIREBASE AUTH USER
-    const cred = await registerUser(email, password);
+    const cred = await registerUser(email, password, username);
 
     // 4️⃣ STORE USER IN DATABASE
+    // Explicitly using 'athletes' collection
     await saveUserAccount(cred.user.uid, {
       username: username,
       email: email,
       role: "athlete"
-    });
+    }, "athletes");
 
-    // 5️⃣ SUCCESS → ALERT + REDIRECT
-    alert("Account created successfully! Please login.");
-    window.location.href = "index.html";
+    // 5️⃣ SUCCESS → SHOW MODAL + REDIRECT
+    showSuccessModal("Account created successfully! Please login.", () => {
+      window.location.href = "index.html";
+    });
 
   } catch (err) {
     console.error(err);
@@ -95,5 +90,7 @@ form.addEventListener("submit", async (e) => {
     } else {
       showError("Registration failed. Please try again.");
     }
+  } finally {
+    hideLoading();
   }
 });
