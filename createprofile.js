@@ -93,8 +93,8 @@ onAuthStateChanged(auth, async (user) => {
     }
     currentUID = user.uid;
 
-    // Update Navbar with Name (from email)
-    const name = user.email.substring(0, user.email.indexOf("@"));
+    // Update Navbar with Name
+    let name = user.displayName || localStorage.getItem("tt_username") || user.email.split("@")[0];
     if (navLoginBtn) navLoginBtn.textContent = name;
     if (mobileLoginBtn) mobileLoginBtn.textContent = name;
 

@@ -161,9 +161,10 @@ onAuthStateChanged(auth, async (user) => {
         return;
     }
 
-    // 2. Update Navbar with Username (DisplayName > Firestore > Email)
+    // 2. Update Navbar with Username (Firestore > DisplayName > Email Prefix)
     const data = docSnap.data();
-    const name = user.displayName || data.username || user.email.split("@")[0];
+    let name = data.username || user.displayName || user.email.split("@")[0];
+    if (name.includes("@")) name = user.email.split("@")[0]; // Force no @ in name
 
     if (navLoginBtn) navLoginBtn.textContent = name;
     if (mobileLoginBtn) mobileLoginBtn.textContent = name;

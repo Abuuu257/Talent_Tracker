@@ -4,6 +4,7 @@
 // =======================================================
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
+import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
 
 // =======================================================
 // 2. FIREBASE CONFIGURATION
@@ -21,6 +22,7 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
+const db = getFirestore(app);
 
 // =======================================================
 // 3. DOM ELEMENT SELECTION
@@ -67,12 +69,20 @@ if (mobileMenuBackBtn) {
 // This runs automatically when the page loads to check
 // if a user is logged in.
 // =======================================================
-onAuthStateChanged(auth, (user) => {
+onAuthStateChanged(auth, async (user) => {
     if (user) {
         // --- USER IS LOGGED IN ---
 
-        // Use Display Name or fallback
-        const name = user.displayName || localStorage.getItem("tt_username") || user.email.split("@")[0];
+        // Use real username (Firestore > DisplayName > LocalStorage > Email Prefix)
+        let name = user.displayName || localStorage.getItem("tt_username");
+        if (!name || name.includes("@")) {
+            const fedData = (await getDoc(doc(db, "federations", user.uid))).data();
+            if (fedData && fedData.username) {
+                name = fedData.username;
+                localStorage.setItem("tt_username", name);
+            }
+        }
+        if (!name) name = user.email.split("@")[0];
 
         // Update Desktop Navbar
         if (navUserBtn) navUserBtn.textContent = name;

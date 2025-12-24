@@ -274,9 +274,8 @@
   <!-- FIREBASE LOGIN (USERNAME -> EMAIL -> AUTH) + SHOW USERNAME ON NAV -->
   <script type="module">
     import { auth, db } from "./register.js";
-    import { signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
-    import { collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
-    import { signOut } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
+    import { onAuthStateChanged, signOut, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
+    import { collection, query, where, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
 
 
     /* ===============================
@@ -338,8 +337,35 @@
     }
 
     /* ===============================
-       KEEP USER AFTER REFRESH
+    /* ===============================
+       KEEP USER AFTER REFRESH (AUTH OBSERVER)
        =============================== */
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        // User is logged in
+        let username = user.displayName || localStorage.getItem("tt_username");
+
+        // If still no username, or it's an email, try to find the real username from Firestore
+        if (!username || username.includes("@")) {
+          const role = localStorage.getItem("tt_role") || "athlete";
+          let collectionName = role + "s";
+          if (role === "federation") collectionName = "federations";
+
+          const q = query(collection(db, collectionName), where("email", "==", user.email));
+          const snap = await getDocs(q);
+          if (!snap.empty) {
+            username = snap.docs[0].data().username;
+            localStorage.setItem("tt_username", username);
+          }
+        }
+
+        const displayName = username || user.email.split("@")[0];
+        setNavbarUser(displayName);
+      } else {
+        // User is logged out
+        setNavbarUser("Login");
+      }
+    });
 
     document.addEventListener("DOMContentLoaded", () => {
       const savedUser = localStorage.getItem("tt_username");
@@ -348,15 +374,17 @@
       }
 
       const openIfNotLogged = (e) => {
-        if (localStorage.getItem("tt_username")) return;
+        if (auth.currentUser || localStorage.getItem("tt_username")) return;
         e.preventDefault();
         openLogin();
       };
 
-      navLoginBtn?.addEventListener("click", openIfNotLogged);
+      navLoginBtn?.addEventListener("click", (e) => {
+        if (localStorage.getItem("tt_username")) return;
+        e.preventDefault();
+        openLogin();
+      });
       mobileLoginBtn?.addEventListener("click", openIfNotLogged);
-
-      // ADDED: Get Started Button opens Login
       document.getElementById("getStartBtn")?.addEventListener("click", openIfNotLogged);
     });
 
@@ -402,12 +430,13 @@
 
         const userData = snap.docs[0].data();
         const email = userData.email;
+        const realUsername = userData.username; // Use the one from DB
 
         // 2️⃣ Firebase Auth
         await signInWithEmailAndPassword(auth, email, password);
 
         // 3️⃣ Success
-        localStorage.setItem("tt_username", username);
+        localStorage.setItem("tt_username", realUsername);
         localStorage.setItem("tt_role", currentRole);
 
         // Redirect to Role-Based Home

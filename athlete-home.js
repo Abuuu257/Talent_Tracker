@@ -89,8 +89,16 @@ onAuthStateChanged(auth, async (user) => {
             console.error("Error checking profile:", err);
         }
 
-        // Use Display Name (set during registration) or fallback to Firestore/LocalStorage if needed
-        const name = user.displayName || localStorage.getItem("tt_username") || user.email.split("@")[0];
+        // Use real username (Firestore > DisplayName > LocalStorage > Email Prefix)
+        let name = user.displayName || localStorage.getItem("tt_username");
+        if (!name || name.includes("@")) {
+            const athleteData = (await getDoc(doc(db, "athletes", user.uid))).data();
+            if (athleteData && athleteData.username) {
+                name = athleteData.username;
+                localStorage.setItem("tt_username", name);
+            }
+        }
+        if (!name) name = user.email.split("@")[0];
 
         // Update Desktop Navbar
         if (navUserBtn) navUserBtn.textContent = name;
