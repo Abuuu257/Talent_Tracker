@@ -152,7 +152,11 @@
                 <a href="#" class="hover:text-[var(--primary)] transition-colors duration-200">Event</a>
                 <div id="navUserArea" class="relative group">
                     <button id="navLoginBtn"
-                        class="px-6 py-2 rounded-full bg-[var(--secondary)] text-white hover:bg-[var(--primary)] transition-all duration-300 font-semibold shadow-lg hover:shadow-xl flex items-center gap-2 transform hover:-translate-y-0.5">
+                        class="px-5 py-2 rounded-full bg-[var(--secondary)] text-white hover:bg-[var(--primary)] transition-all duration-300 font-semibold shadow-lg hover:shadow-xl flex items-center gap-3 transform hover:-translate-y-0.5">
+                        <div id="navUserPic"
+                            class="w-7 h-7 rounded-full bg-white hidden overflow-hidden border border-white/20 shrink-0">
+                            <img id="navUserImg" src="" alt="" class="w-full h-full object-cover hidden">
+                        </div>
                         <span id="navBtnText">Loading...</span>
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="19 9l-7 7-7-7">
@@ -194,7 +198,11 @@
                 <a href="#" class="hover:scale-110 transition-transform">Event</a>
 
                 <div class="w-full max-w-xs border-t border-[var(--primary)]/20 mt-4 pt-8 flex flex-col items-center">
-                    <div class="mb-6 text-center">
+                    <div class="mb-6 flex flex-col items-center">
+                        <div id="mobileUserPic"
+                            class="w-20 h-20 rounded-full bg-white hidden overflow-hidden border-2 border-[var(--primary)]/20 mb-3 shrink-0">
+                            <img id="mobileUserImg" src="" alt="" class="w-full h-full object-cover hidden">
+                        </div>
                         <p class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">Athlete</p>
                         <p id="mobileUserName" class="text-xl font-extrabold text-[var(--primary)]"></p>
                     </div>

@@ -26,6 +26,27 @@ function clearError() {
     errorText.classList.add("hidden");
 }
 
+/* --- TOGGLE PASSWORD VISIBILITY --- */
+const togglePassword = document.getElementById("togglePassword");
+const passwordInput = document.getElementById("password");
+if (togglePassword && passwordInput) {
+    togglePassword.addEventListener("click", () => {
+        const type = passwordInput.getAttribute("type") === "password" ? "text" : "password";
+        passwordInput.setAttribute("type", type);
+
+        const openPaths = togglePassword.querySelectorAll(".eye-open");
+        const closedPath = togglePassword.querySelector(".eye-closed");
+
+        if (type === "text") {
+            openPaths.forEach(p => p.classList.add("hidden"));
+            closedPath.classList.remove("hidden");
+        } else {
+            openPaths.forEach(p => p.classList.remove("hidden"));
+            closedPath.classList.add("hidden");
+        }
+    });
+}
+
 form.addEventListener("submit", async (e) => {
     e.preventDefault();
     clearError();

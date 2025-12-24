@@ -88,8 +88,39 @@ onAuthStateChanged(auth, async (user) => {
 
     // Update Navbar with Name
     let name = user.displayName || localStorage.getItem("tt_username") || user.email.split("@")[0];
-    if (document.getElementById("navBtnText")) document.getElementById("navBtnText").textContent = name;
+    let profilePic = null;
+
+    try {
+        const docRef = doc(db, "athletes", user.uid);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            name = data.username || data.personal?.fullName?.split(" ")[0] || name;
+            profilePic = data.documents?.profilePic || null;
+            if (name) localStorage.setItem("tt_username", name);
+        }
+    } catch (err) { console.error("Error fetching name", err); }
+
+    const navBtnText = document.getElementById("navBtnText");
+    const navPic = document.getElementById("navUserPic");
+    const navImg = document.getElementById("navUserImg");
+    const mobilePic = document.getElementById("mobileUserPic");
+    const mobileImg = document.getElementById("mobileUserImg");
+
+    if (navBtnText) navBtnText.textContent = name;
     if (document.getElementById("mobileUserName")) document.getElementById("mobileUserName").textContent = name;
+
+    // Show Profile Pics
+    if (navPic) navPic.classList.remove("hidden");
+    if (mobilePic) mobilePic.classList.remove("hidden");
+
+    if (profilePic) {
+        if (navImg) { navImg.src = profilePic; navImg.classList.remove("hidden"); }
+        if (mobileImg) { mobileImg.src = profilePic; mobileImg.classList.remove("hidden"); }
+    } else {
+        if (navImg) navImg.classList.add("hidden");
+        if (mobileImg) mobileImg.classList.add("hidden");
+    }
 
     // Fill hidden/readonly email fields
     if (document.getElementById("navUserEmail")) document.getElementById("navUserEmail").textContent = user.email;

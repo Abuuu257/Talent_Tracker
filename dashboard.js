@@ -184,14 +184,34 @@ onAuthStateChanged(auth, async (user) => {
         return;
     }
 
-    // 2. Update Navbar with Username (Firestore > DisplayName > Email Prefix)
+    // 2. Update UI with Profile Data
     const data = docSnap.data();
     let name = data.username || user.displayName || user.email.split("@")[0];
     if (name.includes("@")) name = user.email.split("@")[0]; // Force no @ in name
 
-    if (document.getElementById("navBtnText")) document.getElementById("navBtnText").textContent = name;
+    const profilePic = data.documents?.profilePic || null;
+
+    const navBtnText = document.getElementById("navBtnText");
+    const navPic = document.getElementById("navUserPic");
+    const navImg = document.getElementById("navUserImg");
+    const mobilePic = document.getElementById("mobileUserPic");
+    const mobileImg = document.getElementById("mobileUserImg");
+
+    if (navBtnText) navBtnText.textContent = name;
     if (mobileUserName) mobileUserName.textContent = name;
     if (navUserEmail) navUserEmail.textContent = user.email;
+
+    // Show Profile Pics
+    if (navPic) navPic.classList.remove("hidden");
+    if (mobilePic) mobilePic.classList.remove("hidden");
+
+    if (profilePic) {
+        if (navImg) { navImg.src = profilePic; navImg.classList.remove("hidden"); }
+        if (mobileImg) { mobileImg.src = profilePic; mobileImg.classList.remove("hidden"); }
+    } else {
+        if (navImg) navImg.classList.add("hidden");
+        if (mobileImg) mobileImg.classList.add("hidden");
+    }
 
     // Start Loading Data
     try {

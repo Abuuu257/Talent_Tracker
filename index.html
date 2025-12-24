@@ -89,8 +89,12 @@
         <a href="#" class="hover:text-[var(--primary)] transition-colors duration-200">Event</a>
         <div class="relative group">
           <button id="navLoginBtn"
-            class="px-6 py-2 rounded-full bg-[var(--secondary)] text-white hover:bg-[var(--primary)] transition-all duration-300 font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
-            Login
+            class="px-5 py-2 rounded-full bg-[var(--secondary)] text-white hover:bg-[var(--primary)] transition-all duration-300 font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center gap-2">
+            <div id="navUserPic"
+              class="w-7 h-7 rounded-full bg-white hidden overflow-hidden border border-white/20 shrink-0">
+              <img id="navUserImg" src="" alt="" class="w-full h-full object-cover hidden">
+            </div>
+            <span id="navLoginBtnText">Login</span>
           </button>
 
           <!-- DROPDOWN -->
@@ -170,12 +174,16 @@
       <div class="pt-6 border-t border-gray-100">
         <p id="mobileUserLabel" class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Account</p>
         <button id="mobileLoginBtn"
-          class="w-full py-4 rounded-xl bg-[var(--primary)] text-white hover:bg-[var(--secondary)] transition-all shadow-lg font-black uppercase tracking-wider text-sm flex items-center justify-center gap-2">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          class="w-full py-4 rounded-xl bg-[var(--primary)] text-white hover:bg-[var(--secondary)] transition-all shadow-lg font-black uppercase tracking-wider text-sm flex items-center justify-center gap-3">
+          <div id="mobileUserPic"
+            class="w-8 h-8 rounded-full bg-white hidden overflow-hidden border border-white/20 shrink-0">
+            <img id="mobileUserImg" src="" alt="" class="w-full h-full object-cover hidden">
+          </div>
+          <span id="mobileLoginBtnText">Login</span>
+          <svg id="mobileLoginIcon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
               d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
           </svg>
-          Login
         </button>
         <button id="mobileLogoutBtn"
           class="hidden w-full py-4 rounded-xl bg-red-50 text-red-600 hover:bg-red-100 transition-all font-bold text-sm border border-red-100 uppercase tracking-wide flex items-center justify-center gap-2">
@@ -330,8 +338,22 @@
 
             <div class="space-y-2">
               <label class="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Password</label>
-              <input id="login-password" type="password" placeholder="••••••••" class="w-full border-2 border-gray-100 rounded-2xl px-6 py-4
-                     focus:outline-none focus:border-[#2E5F9E] transition-all bg-gray-50 font-semibold" />
+              <div class="relative">
+                <input id="login-password" type="password" placeholder="••••••••" class="w-full border-2 border-gray-100 rounded-2xl px-6 py-4
+                       focus:outline-none focus:border-[#2E5F9E] transition-all bg-gray-50 font-semibold pr-16" />
+                <button type="button" id="togglePassword"
+                  class="absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#2E5F9E] focus:outline-none group">
+                  <svg id="eyeIcon" class="w-6 h-6 transition-all group-active:scale-90" fill="none"
+                    stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                    <path class="eye-open" stroke-linecap="round" stroke-linejoin="round"
+                      d="M2.036 12.322a1.012 1.012 0 0 1 0-.644C3.414 9.006 6.91 5 12 5c5.346 0 8.841 4.006 9.964 6.678a1.012 1.012 0 0 1 0 .644C20.586 14.994 17.09 19 12 19c-5.346 0-8.841-4.006-9.964-6.678Z" />
+                    <path class="eye-open" stroke-linecap="round" stroke-linejoin="round"
+                      d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                    <path class="eye-closed hidden" stroke-linecap="round" stroke-linejoin="round"
+                      d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.892 7.892L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.88 9.88" />
+                  </svg>
+                </button>
+              </div>
             </div>
 
             <div id="loginError"
@@ -458,9 +480,37 @@
       err.classList.add("hidden");
     }
 
-    function setNavbarUser(username) {
-      if (navLoginBtn) navLoginBtn.textContent = username;
-      if (mobileLoginBtn) mobileLoginBtn.textContent = username;
+    function setNavbarUser(username, picUrl = null) {
+      const navText = document.getElementById("navLoginBtnText");
+      const mobileText = document.getElementById("mobileLoginBtnText");
+      const navPic = document.getElementById("navUserPic");
+      const navImg = document.getElementById("navUserImg");
+      const mobilePic = document.getElementById("mobileUserPic");
+      const mobileImg = document.getElementById("mobileUserImg");
+      const mobileLoginIcon = document.getElementById("mobileLoginIcon");
+
+      if (navText) navText.textContent = username;
+      if (mobileText) mobileText.textContent = username;
+
+      if (username !== "Login") {
+        // Logged in
+        if (navPic) navPic.classList.remove("hidden");
+        if (mobilePic) mobilePic.classList.remove("hidden");
+        if (mobileLoginIcon) mobileLoginIcon.classList.add("hidden");
+
+        if (picUrl) {
+          if (navImg) { navImg.src = picUrl; navImg.classList.remove("hidden"); }
+          if (mobileImg) { mobileImg.src = picUrl; mobileImg.classList.remove("hidden"); }
+        } else {
+          if (navImg) navImg.classList.add("hidden");
+          if (mobileImg) mobileImg.classList.add("hidden");
+        }
+      } else {
+        // Logged out
+        if (navPic) navPic.classList.add("hidden");
+        if (mobilePic) mobilePic.classList.add("hidden");
+        if (mobileLoginIcon) mobileLoginIcon.classList.remove("hidden");
+      }
     }
 
     /* ===============================
@@ -474,25 +524,36 @@
       if (user) {
         // User is logged in
         let username = user.displayName || localStorage.getItem("tt_username");
+        let profilePic = null;
 
-        // If still no username, or it's an email, try to find the real username from Firestore
-        if (!username || username.includes("@")) {
-          const role = localStorage.getItem("tt_role") || "athlete";
-          let collectionName = role + "s";
-          if (role === "federation") collectionName = "federations";
+        const role = localStorage.getItem("tt_role") || "athlete";
+        let collectionName = role + "s";
+        if (role === "federation") collectionName = "federations";
 
-          try {
+        try {
+          const userDocRef = doc(db, collectionName, user.uid);
+          const userDocSnap = await getDoc(userDocRef);
+
+          if (userDocSnap.exists()) {
+            const data = userDocSnap.data();
+            username = data.username || data.personal?.fullName?.split(" ")[0] || username;
+            profilePic = data.documents?.profilePic || null;
+            if (username) localStorage.setItem("tt_username", username);
+          } else {
+            // Fallback for email lookup
             const q = query(collection(db, collectionName), where("email", "==", user.email));
             const snap = await getDocs(q);
             if (!snap.empty) {
-              username = snap.docs[0].data().username;
-              localStorage.setItem("tt_username", username);
+              const data = snap.docs[0].data();
+              username = data.username || data.personal?.fullName?.split(" ")[0];
+              profilePic = data.documents?.profilePic || null;
+              if (username) localStorage.setItem("tt_username", username);
             }
-          } catch (e) { console.error("Error fetching username", e); }
-        }
+          }
+        } catch (e) { console.error("Error fetching user data", e); }
 
         const displayName = username || user.email.split("@")[0];
-        setNavbarUser(displayName);
+        setNavbarUser(displayName, profilePic);
 
         // Mobile Menu specific
         if (mobileDashLink) mobileDashLink.classList.remove("hidden");
@@ -546,6 +607,27 @@
         toggleMobileMenu(false);
         openLogin();
       };
+
+      /* toggle password visibility */
+      const togglePassword = document.getElementById("togglePassword");
+      const passwordInput = document.getElementById("login-password");
+      if (togglePassword && passwordInput) {
+        togglePassword.addEventListener("click", () => {
+          const type = passwordInput.getAttribute("type") === "password" ? "text" : "password";
+          passwordInput.setAttribute("type", type);
+
+          const openPaths = togglePassword.querySelectorAll(".eye-open");
+          const closedPath = togglePassword.querySelector(".eye-closed");
+
+          if (type === "text") {
+            openPaths.forEach(p => p.classList.add("hidden"));
+            closedPath.classList.remove("hidden");
+          } else {
+            openPaths.forEach(p => p.classList.remove("hidden"));
+            closedPath.classList.add("hidden");
+          }
+        });
+      }
 
       const handleUserBtnClick = (e) => {
         const loggedInUser = localStorage.getItem("tt_username");

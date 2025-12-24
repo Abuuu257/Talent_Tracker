@@ -88,25 +88,51 @@ onAuthStateChanged(auth, async (user) => {
 
         // Use real username (Firestore > DisplayName > LocalStorage > Email Prefix)
         let name = user.displayName || localStorage.getItem("tt_username");
-        if (!name || name.includes("@")) {
-            const coachData = (await getDoc(doc(db, "coaches", user.uid))).data();
-            if (coachData && coachData.username) {
-                name = coachData.username;
-                localStorage.setItem("tt_username", name);
+        let profilePic = null;
+
+        try {
+            const docRef = doc(db, "coaches", user.uid);
+            const docSnap = await getDoc(docRef);
+
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                // Show dashboard link if profile exists
+                if (navDashboardLink) navDashboardLink.classList.remove("hidden");
+                if (mobileDashboardLink) mobileDashboardLink.classList.remove("hidden");
+
+                name = data.username || data.fullName?.split(" ")[0] || name;
+                profilePic = data.profilePic || null; // Coach might have direct profilePic field
+                if (name) localStorage.setItem("tt_username", name);
             }
+        } catch (err) {
+            console.error("Error checking profile:", err);
         }
+
         if (!name) name = user.email.split("@")[0];
 
-        // Update Desktop Navbar
+        // Update UI with Profile Data
         const navBtnText = document.getElementById("navBtnText");
+        const navPic = document.getElementById("navUserPic");
+        const navImg = document.getElementById("navUserImg");
+        const mobilePic = document.getElementById("mobileUserPic");
+        const mobileImg = document.getElementById("mobileUserImg");
+
         if (navBtnText) navBtnText.textContent = name;
         if (navUserEmail) navUserEmail.textContent = user.email;
-
-        // Update Mobile Menu
         if (mobileUserName) mobileUserName.textContent = name;
-
-        // Update Hero Section Welcome Message
         if (heroUserDisplay) heroUserDisplay.textContent = name;
+
+        // Show Profile Pics
+        if (navPic) navPic.classList.remove("hidden");
+        if (mobilePic) mobilePic.classList.remove("hidden");
+
+        if (profilePic) {
+            if (navImg) { navImg.src = profilePic; navImg.classList.remove("hidden"); }
+            if (mobileImg) { mobileImg.src = profilePic; mobileImg.classList.remove("hidden"); }
+        } else {
+            if (navImg) navImg.classList.add("hidden");
+            if (mobileImg) mobileImg.classList.add("hidden");
+        }
 
     } else {
         // --- USER IS NOT LOGGED IN ---
