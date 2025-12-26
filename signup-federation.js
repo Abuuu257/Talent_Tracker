@@ -1,6 +1,8 @@
 import {
     registerUser,
     saveFederationProfile,
+    logoutUser,
+    isUsernameTaken,
     db
 } from "./register.js";
 
@@ -73,14 +75,9 @@ form.addEventListener("submit", async (e) => {
 
     try {
         showLoading();
-        // 1️⃣ CHECK USERNAME UNIQUENESS (IN FEDERATIONS COLLECTION)
-        const usernameQuery = query(
-            collection(db, "federations"),
-            where("username", "==", username)
-        );
-        const usernameSnap = await getDocs(usernameQuery);
-
-        if (!usernameSnap.empty) {
+        // 1️⃣ CHECK USERNAME UNIQUENESS ACROSS ALL ROLES
+        const taken = await isUsernameTaken(username);
+        if (taken) {
             showError("Username already exists.");
             return;
         }
@@ -97,7 +94,10 @@ form.addEventListener("submit", async (e) => {
             role: "federation"
         });
 
-        // 5️⃣ SUCCESS → SHOW MODAL + REDIRECT
+        // 5️⃣ LOGOUT USER (Don't auto-login after signup)
+        await logoutUser();
+
+        // 6️⃣ SUCCESS → SHOW MODAL + REDIRECT
         showSuccessModal("Federation account created successfully! Please login.", () => {
             window.location.href = "index.html";
         });

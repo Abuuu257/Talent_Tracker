@@ -25,7 +25,13 @@ const form = document.getElementById("athleteForm");
 const submitBtn = form?.querySelector("button[type='button']"); // The button you click
 
 // Limits for Event Validation (Min/Max seconds)
-const eventTimeLimits = { "100m": { min: 9.0, max: 20.0 }, "200m": { min: 19.0, max: 45.0 }, "400m": { min: 43.0, max: 120.0 }, "800m": { min: 100.0, max: 300.0 }, "1500m": { min: 200.0, max: 600.0 } };
+const eventTimeLimits = {
+    "100m": { min: 9.0, max: 20.0 },
+    "200m": { min: 19.0, max: 45.0 },
+    "400m": { min: 43.0, max: 120.0 },
+    "800m": { min: 100.0, max: 300.0 },
+    "1200m": { min: 160.0, max: 500.0 }
+};
 
 // --- 2. UI HELPERS (Messages & Errors) ---
 
@@ -285,8 +291,11 @@ window.addEventRow = function (data = null) {
                 <label class="text-xs font-semibold text-gray-500 uppercase">Event Type <span class="text-red-500">*</span></label>
                 <select class="input event-select">
                     <option value="">Select</option>
-                    <option value="100m">100m</option><option value="200m">200m</option><option value="400m">400m</option>
-                    <option value="800m">800m</option><option value="1500m">1500m</option><option value="Other">Other</option>
+                    <option value="100m">100m</option>
+                    <option value="200m">200m</option>
+                    <option value="400m">400m</option>
+                    <option value="800m">800m</option>
+                    <option value="1200m">1200m</option>
                 </select>
             </div>
             <div>

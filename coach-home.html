@@ -51,8 +51,8 @@
             <div class="hidden md:flex space-x-8 font-semibold text-black items-center">
                 <a href="coach-home.html"
                     class="hover:text-[var(--primary)] transition-colors duration-200 text-[var(--primary)]">Home</a>
-                <a href="dashboard.html"
-                    class="hover:text-[var(--primary)] transition-colors duration-200">Dashboard</a>
+                <a href="coach-athletes.html"
+                    class="hover:text-[var(--primary)] transition-colors duration-200">Discover Athletes</a>
                 <a href="#" class="hover:text-[var(--primary)] transition-colors duration-200">Event</a>
 
                 <div id="navUserArea" class="relative group">
@@ -135,14 +135,13 @@
                     </svg>
                     Home
                 </a>
-                <a href="dashboard.html"
+                <a href="coach-athletes.html"
                     class="flex items-center gap-4 py-3 text-lg font-bold text-gray-800 hover:text-[var(--primary)] transition-colors">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z">
-                        </path>
+                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                     </svg>
-                    Dashboard
+                    Discover Athletes
                 </a>
                 <a href="#"
                     class="flex items-center gap-4 py-3 text-lg font-bold text-gray-800 hover:text-[var(--primary)] transition-colors">
@@ -192,7 +191,7 @@
                 class="lg:col-span-5 flex flex-col justify-center items-center text-center lg:text-left lg:items-start">
 
                 <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-[var(--primary)] leading-tight mb-8">
-                    Welcome, <span id="heroUserDisplay" class="text-white drop-shadow-sm italic">Coach</span> <br>
+                    Welcome, <span id="heroUserDisplay" class="text-white drop-shadow-sm">Coach</span> <br>
                     <span class="block mt-4 text-[var(--primary)]">Manage and Discover Talent.</span>
                 </h1>
 
@@ -201,10 +200,16 @@
                     tools.
                 </p>
 
-                <button id="createProfileBtn"
-                    class="bg-[var(--secondary)] text-white px-12 py-5 rounded-full shadow-2xl hover:bg-[var(--primary)] transition-all duration-300 font-bold text-xl transform hover:scale-105 active:scale-95">
-                    View Dashboard
-                </button>
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <button id="createProfileBtn"
+                        class="bg-[var(--secondary)] text-white px-10 py-4 rounded-full shadow-xl hover:bg-[var(--primary)] transition-all duration-300 font-bold text-lg transform hover:scale-105 active:scale-95">
+                        My Coach Profile
+                    </button>
+                    <a href="coach-athletes.html"
+                        class="bg-white text-[var(--primary)] border-2 border-[var(--primary)] px-10 py-4 rounded-full shadow-lg hover:bg-slate-50 transition-all duration-300 font-bold text-lg text-center transform hover:scale-105 active:scale-95">
+                        Discover Athletes
+                    </a>
+                </div>
             </div>
 
             <div class="lg:col-span-12 lg:col-span-5 flex justify-center lg:justify-end">

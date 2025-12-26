@@ -130,6 +130,24 @@ export async function getUserByUsername(username, role) {
   };
 }
 
+/**
+ * Check if username is already taken across ALL roles.
+ */
+export async function isUsernameTaken(username) {
+  const collections = ["athletes", "coaches", "federations", "users"];
+
+  for (const col of collections) {
+    const q = query(
+      collection(db, col),
+      where("username", "==", username)
+    );
+    const snap = await getDocs(q);
+    if (!snap.empty) return true;
+  }
+
+  return false;
+}
+
 // =======================================================
 // ATHLETE PROFILE FUNCTIONS (UNCHANGED)
 // =======================================================

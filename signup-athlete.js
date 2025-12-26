@@ -1,6 +1,8 @@
 import {
   registerUser,
   saveUserAccount,
+  logoutUser,
+  isUsernameTaken,
   db
 } from "./register.js";
 
@@ -73,14 +75,9 @@ form.addEventListener("submit", async (e) => {
 
   try {
     showLoading();
-    // 1️⃣ CHECK USERNAME UNIQUENESS
-    const usernameQuery = query(
-      collection(db, "athletes"),
-      where("username", "==", username)
-    );
-    const usernameSnap = await getDocs(usernameQuery);
-
-    if (!usernameSnap.empty) {
+    // 1️⃣ CHECK USERNAME UNIQUENESS ACROSS ALL ROLES
+    const taken = await isUsernameTaken(username);
+    if (taken) {
       showError("Username already exists.");
       return;
     }
@@ -98,7 +95,10 @@ form.addEventListener("submit", async (e) => {
       role: "athlete"
     }, "athletes");
 
-    // 5️⃣ SUCCESS → SHOW MODAL + REDIRECT
+    // 5️⃣ LOGOUT USER (Don't auto-login after signup)
+    await logoutUser();
+
+    // 6️⃣ SUCCESS → SHOW MODAL + REDIRECT
     showSuccessModal("Account created successfully! Please login.", () => {
       window.location.href = "index.html";
     });
@@ -107,7 +107,11 @@ form.addEventListener("submit", async (e) => {
     console.error(err);
 
     if (err.message) {
-      showError(err.message);
+      let msg = err.message;
+      if (err.code === "auth/email-already-in-use") {
+        msg = "Email is already registered.";
+      }
+      showError(msg);
     } else {
       showError("Registration failed. Please try again.");
     }

@@ -168,8 +168,7 @@ window.addEventListener('click', () => {
 // Redirects user to the form page to fill in their details
 if (createProfileBtn) {
     createProfileBtn.addEventListener("click", () => {
-        alert("Coach Profile creation is coming soon!");
-        // window.location.href = "create-coach-profile.html"; 
+        window.location.href = "create-coach-profile.html";
     });
 }
 
