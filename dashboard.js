@@ -5,7 +5,8 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import { getFirestore, doc, getDoc, updateDoc, arrayUnion, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-import { showLoading, hideLoading } from "./ui-utils.js";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
+import { showLoading, hideLoading, initWhatsAppSupport } from "./ui-utils.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyBtIlIV-FGmM2hZh0NcuK78N9EafqpcGTQ",
@@ -19,6 +20,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
+const storage = getStorage(app);
 
 // =======================================================
 // 2. DOM ELEMENT REFERENCES
@@ -47,6 +49,7 @@ const headerPBDisplay = document.getElementById("headerPBDisplay");
 const profilePicEl = document.getElementById("profilePic");
 const profilePicInput = document.getElementById("profilePicInput");
 const editProfileBtn = document.getElementById("editProfileBtn");
+const contactSupportBtn = document.getElementById("contactSupportBtn");
 
 // Info Containers
 const fullProfileList = document.getElementById("fullProfileList");
@@ -82,7 +85,18 @@ const messageText = document.getElementById("messageText");
 const messageDot = document.getElementById("messageDot");
 
 // Realistic Time Limits (Validation Rule)
-const eventTimeLimits = { "100m": { min: 9.0, max: 20.0 }, "200m": { min: 19.0, max: 45.0 }, "400m": { min: 43.0, max: 120.0 }, "800m": { min: 100.0, max: 300.0 }, "1500m": { min: 200.0, max: 600.0 } };
+const eventTimeLimits = {
+    "100m": { min: 9.0, max: 20.0 },
+    "200m": { min: 19.0, max: 45.0 },
+    "400m": { min: 43.0, max: 120.0 },
+    "800m": { min: 100.0, max: 300.0 },
+    "1200m": { min: 160.0, max: 500.0 },
+    "1500m": { min: 200.0, max: 600.0 },
+    "5000m": { min: 700.0, max: 1800.0 },
+    "10000m": { min: 1500.0, max: 4000.0 },
+    "Long Jump": { min: 3.0, max: 10.0 },
+    "High Jump": { min: 1.0, max: 3.0 }
+};
 
 // Global Data
 let currentUID = null;
@@ -209,14 +223,17 @@ onAuthStateChanged(auth, async (user) => {
         if (navImg) { navImg.src = profilePic; navImg.classList.remove("hidden"); }
         if (mobileImg) { mobileImg.src = profilePic; mobileImg.classList.remove("hidden"); }
     } else {
-        if (navImg) navImg.classList.add("hidden");
-        if (mobileImg) mobileImg.classList.add("hidden");
+        const defaultPic = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=012A61&color=fff`;
+        if (navImg) { navImg.src = defaultPic; navImg.classList.remove("hidden"); }
+        if (mobileImg) { mobileImg.src = defaultPic; mobileImg.classList.remove("hidden"); }
     }
 
     // Start Loading Data
     try {
         showLoading();
         await loadAthleteProfile();
+        // Initialize WhatsApp Support
+        initWhatsAppSupport('Athlete');
     } catch (err) {
         console.error(err);
         if (err.code !== 'unavailable') showMessage("Error connecting", "error");
@@ -227,14 +244,27 @@ onAuthStateChanged(auth, async (user) => {
 
 // Logout Handler
 const handleLogout = async () => {
-    await signOut(auth);
-    window.location.href = "index.html";
+    try {
+        await signOut(auth);
+        localStorage.removeItem("tt_username");
+        localStorage.removeItem("tt_role");
+        window.location.href = "index.html";
+    } catch (e) {
+        console.error("Logout error", e);
+    }
 };
 logoutBtn?.addEventListener("click", handleLogout);
 mobileLogoutBtn?.addEventListener("click", handleLogout);
 
 // Edit Button -> Redirect to Form
 editProfileBtn?.addEventListener("click", () => { if (currentUID) window.location.href = `createprofile.html?edit=true`; });
+
+// Contact Support Handler
+contactSupportBtn?.addEventListener("click", () => {
+    const supportNumber = "+94xxxxxxxxx";
+    const msg = encodeURIComponent("Hello Talent Tracker Support, I need some help with my profile.");
+    window.open(`https://wa.me/${supportNumber.replace(/\D/g, '')}?text=${msg}`, '_blank');
+});
 
 // =======================================================
 // 6. LOAD & DISPLAY DATA
@@ -286,13 +316,16 @@ profilePicInput?.addEventListener("change", async (e) => {
     try {
         showLoading();
         showMessage("Updating image...", "info");
-        const base64String = await fileToBase64(file);
+        const filePath = `athletes/${currentUID}/profilePic_${Date.now()}_${file.name}`;
+        const storageRef = ref(storage, filePath);
+        const snapshot = await uploadBytes(storageRef, file);
+        const downloadUrl = await getDownloadURL(snapshot.ref);
 
         // Save to DB
-        await setDoc(doc(db, "athletes", currentUID), { documents: { profilePic: base64String } }, { merge: true });
+        await setDoc(doc(db, "athletes", currentUID), { documents: { profilePic: downloadUrl } }, { merge: true });
 
         // Update UI
-        profilePicEl.src = base64String;
+        profilePicEl.src = downloadUrl;
         showMessage("Image updated!", "success");
     } catch (err) {
         showMessage("Failed to upload", "error");
@@ -489,10 +522,13 @@ window.uploadSlot = async (index, btnElement) => {
 
     try {
         const id = `ach_${Date.now()}`;
-        const base64String = await fileToBase64(file);
+        const filePath = `athletes/${currentUID}/achievement_${id}_${file.name}`;
+        const storageRef = ref(storage, filePath);
+        const snapshot = await uploadBytes(storageRef, file);
+        const downloadUrl = await getDownloadURL(snapshot.ref);
 
         const newAch = {
-            id, event, meet, place, age, url: base64String,
+            id, event, meet, place, age, url: downloadUrl,
             date: new Date().toISOString().split('T')[0]
         };
 
@@ -606,8 +642,11 @@ function populateEventDropdowns() {
     const events = athletic.events || [];
     const eventNames = events.map(e => e.event);
     const historyEvents = Object.keys(athleteDocData.performanceResults || {});
-    // Unique list of all events user has participated in
-    const allEvents = [...new Set([...eventNames, ...historyEvents, "100m", "200m", "400m", "800m", "1500m"])];
+    // LIMIT to ONLY events in profile + history, no defaults if profile has events
+    let allEvents = [...new Set([...eventNames, ...historyEvents])];
+
+    // Fallback if no events specified yet
+    if (allEvents.length === 0) allEvents = ["100m", "200m", "400m", "800m", "1500m"];
 
     const opts = allEvents.map(e => `<option value="${e}">${e}</option>`).join("");
     eventSelect.innerHTML = opts;

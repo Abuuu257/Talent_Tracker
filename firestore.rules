@@ -12,28 +12,39 @@ service cloud.firestore {
       return request.auth.uid == userId;
     }
 
+    // Helper function to check if the user is a federation admin
+    function isFederation() {
+      return exists(/databases/$(database)/documents/federations/$(request.auth.uid));
+    }
+
     // USERS (Keep for legacy or generic access if needed)
     match /users/{userId} {
       allow read: if true;
-      allow write: if isOwner(userId);
+      allow write: if isOwner(userId) || isFederation();
     }
 
     // ATHLETES
     match /athletes/{userId} {
-      allow read: if true; // Required for username uniqueness check before signup
-      allow write: if isOwner(userId); // Only the athlete can create/update their profile
+      allow read: if true; 
+      allow write: if isOwner(userId) || isFederation();
     }
 
     // COACHES
     match /coaches/{userId} {
       allow read: if true;
-      allow write: if isOwner(userId);
+      allow write: if isOwner(userId) || isFederation();
     }
 
     // FEDERATIONS
     match /federations/{userId} {
       allow read: if true;
       allow write: if isOwner(userId);
+    }
+    
+    // REGISTRATION CODES
+    match /registration_codes/{codeId} {
+        allow read: if true;
+        allow write: if isFederation();
     }
   }
 }

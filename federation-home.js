@@ -1,15 +1,8 @@
-
-// 1. IMPORTS
-// Importing necessary Firebase services from the CDN.
-// =======================================================
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
-import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+import { getFirestore, doc, getDoc, getDocs, collection, query, where, updateDoc, setDoc } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+import { initWhatsAppSupport, sendWhatsAppNotification } from "./ui-utils.js";
 
-// =======================================================
-// 2. FIREBASE CONFIGURATION
-// Specific keys to connect to the 'athletesystem' project.
-// =======================================================
 const firebaseConfig = {
     apiKey: "AIzaSyBtIlIV-FGmM2hZh0NcuK78N9EafqpcGTQ",
     authDomain: "athletesystem-61615.firebaseapp.com",
@@ -19,38 +12,302 @@ const firebaseConfig = {
     appId: "1:646599639422:web:33f0f059a0e7112d9f332f"
 };
 
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// =======================================================
-// 3. DOM ELEMENT SELECTION
-// Capturing HTML elements to manipulate them via JS.
-// =======================================================
+// --- GLOBAL STATE ---
+let currentTab = 'coaches';
+let allUsers = [];
+let filteredUsers = [];
 
-// Navbar Elements
-const navUserBtn = document.getElementById("navUserBtn");          // Button displaying username
-const navUserDropdown = document.getElementById("navUserDropdown"); // The hidden dropdown menu
-const navUserEmail = document.getElementById("navUserEmail");      // Email display inside dropdown
+// --- DOM ELEMENTS ---
+const userTableBody = document.getElementById("userTableBody");
+const colSpecific1 = document.getElementById("colSpecific1");
+const userSearch = document.getElementById("userSearch");
+const statusFilter = document.getElementById("statusFilter");
+const heroUserDisplay = document.getElementById("heroUserDisplay");
 
-// Mobile Elements
-const mobileUserName = document.getElementById("mobileUserName");
+onAuthStateChanged(auth, async (user) => {
+    const isAdmin = localStorage.getItem("tt_role") === "federation";
+
+    // STRICT CHECK: Only allow if tt_role is 'federation'
+    if (!isAdmin) {
+        window.location.href = "index.html";
+        return;
+    }
+
+    let name = "Admin";
+    if (heroUserDisplay) heroUserDisplay.textContent = name;
+
+    // Update Navbar UI
+    const navBtnText = document.getElementById("navBtnText");
+    const navPic = document.getElementById("navUserPic");
+    const navImg = document.getElementById("navUserImg");
+    const mobilePic = document.getElementById("mobileUserPic");
+    const mobileImg = document.getElementById("mobileUserImg");
+    const mobileUserName = document.getElementById("mobileUserName");
+    const navUserEmail = document.getElementById("navUserEmail");
+
+    if (navBtnText) navBtnText.textContent = name;
+    if (mobileUserName) mobileUserName.textContent = name;
+    if (navUserEmail) navUserEmail.textContent = user?.email || "admin@talenttracker.lk";
+
+    // Show Default Profile Pic for Federation Admin
+    const defaultPic = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=012A61&color=fff`;
+    if (navPic) navPic.classList.remove("hidden");
+    if (mobilePic) mobilePic.classList.remove("hidden");
+    if (navImg) { navImg.src = defaultPic; navImg.classList.remove("hidden"); }
+    if (mobileImg) { mobileImg.src = defaultPic; mobileImg.classList.remove("hidden"); }
+
+    // Initial Fetch
+    fetchUsers();
+
+    // SECURITY: Ensure this admin exists in 'federations' collection for Rules
+    try {
+        const adminRef = doc(db, "federations", user.uid);
+        const adminSnap = await getDoc(adminRef);
+        if (!adminSnap.exists()) {
+            await setDoc(adminRef, {
+                email: user.email,
+                role: "federation",
+                createdAt: new Date().toISOString()
+            });
+            console.log("Federation Admin document created for Security Rules.");
+        }
+    } catch (e) {
+        console.error("Auto-create admin doc failed:", e);
+    }
+
+    // Init Support
+    initWhatsAppSupport("Federation Admin");
+});
+
+// --- MANAGEMENT LOGIC ---
+
+window.switchManagementTab = (tab) => {
+    currentTab = tab;
+
+    // Update UI Buttons
+    const btnCoaches = document.getElementById("tabCoaches");
+    const btnAthletes = document.getElementById("tabAthletes");
+
+    if (tab === 'coaches') {
+        btnCoaches.classList.add("bg-[var(--primary)]", "text-white", "shadow-lg");
+        btnCoaches.classList.remove("text-slate-500");
+        btnAthletes.classList.remove("bg-[var(--primary)]", "text-white", "shadow-lg");
+        btnAthletes.classList.add("text-slate-500");
+        if (colSpecific1) colSpecific1.textContent = "Specialization";
+    } else {
+        btnAthletes.classList.add("bg-[var(--primary)]", "text-white", "shadow-lg");
+        btnAthletes.classList.remove("text-slate-500");
+        btnCoaches.classList.remove("bg-[var(--primary)]", "text-white", "shadow-lg");
+        btnCoaches.classList.add("text-slate-500");
+        if (colSpecific1) colSpecific1.textContent = "Location";
+    }
+
+    fetchUsers();
+};
+
+async function fetchUsers() {
+    if (!userTableBody) return;
+
+    userTableBody.innerHTML = `
+        <tr>
+            <td colspan="4" class="px-8 py-20 text-center">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--primary)] mx-auto mb-4"></div>
+                <p class="text-sm font-bold text-slate-400">Fetching ${currentTab}...</p>
+            </td>
+        </tr>
+    `;
+
+    try {
+        const colRef = collection(db, currentTab);
+        const snapshot = await getDocs(colRef);
+        allUsers = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        applyFilters();
+    } catch (err) {
+        console.error("Error fetching users:", err);
+        userTableBody.innerHTML = `<tr><td colspan="4" class="px-8 py-10 text-center text-red-500 font-bold">Failed to load directory.</td></tr>`;
+    }
+}
+
+function applyFilters() {
+    const searchTerm = userSearch.value.toLowerCase();
+    const statusVal = statusFilter.value;
+
+    filteredUsers = allUsers.filter(u => {
+        const name = (u.fullName || u.personal?.fullName || u.username || "").toLowerCase();
+        const email = (u.email || "").toLowerCase();
+        const matchesSearch = name.includes(searchTerm) || email.includes(searchTerm);
+
+        const isApproved = u.federationApproval?.status === "approved";
+        if (statusVal === 'pending') return matchesSearch && !isApproved;
+        if (statusVal === 'approved') return matchesSearch && isApproved;
+        return matchesSearch;
+    });
+
+    renderTable();
+}
+
+function renderTable() {
+    if (filteredUsers.length === 0) {
+        userTableBody.innerHTML = `<tr><td colspan="4" class="px-8 py-20 text-center text-slate-400 font-medium">No results found matching your criteria.</td></tr>`;
+        return;
+    }
+
+    userTableBody.innerHTML = filteredUsers.map(user => {
+        const name = user.fullName || user.personal?.fullName || user.username || "Unknown User";
+        const email = user.email || "No Email";
+        const pic = user.profilePic || user.documents?.profilePic || "https://ui-avatars.com/api/?name=" + name;
+        const isApproved = user.federationApproval?.status === "approved";
+
+        let spec = "";
+        if (currentTab === 'coaches') {
+            spec = user.coachingBio?.specialization || user.personalInfo?.specialization || "Generalist";
+        } else {
+            spec = user.personal?.city || user.personal?.district || "Unknown";
+        }
+
+        return `
+            <tr class="hover:bg-slate-50 transition-colors border-b border-slate-50 last:border-0">
+                <td class="px-8 py-4">
+                    <div class="flex items-center gap-4">
+                        <img src="${pic}" class="w-10 h-10 rounded-xl object-cover shrink-0 border border-slate-100">
+                        <div class="min-w-0">
+                            <p class="font-bold text-[var(--primary)] truncate">${name}</p>
+                            <p class="text-[10px] font-medium text-slate-400 truncate">${email}</p>
+                        </div>
+                    </div>
+                </td>
+                <td class="px-8 py-4">
+                    <span class="text-xs font-bold text-slate-600">${spec}</span>
+                </td>
+                <td class="px-8 py-4 text-center">
+                    <span class="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-wider ${isApproved ? 'bg-green-100 text-green-600' : 'bg-amber-100 text-amber-600'}">
+                        ${isApproved ? 'Approved' : 'Pending'}
+                    </span>
+                </td>
+                <td class="px-8 py-4 text-right">
+                    <button onclick="toggleApproval('${user.id}', ${isApproved})" 
+                        class="px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${isApproved ? 'text-red-500 hover:bg-red-50' : 'text-blue-500 hover:bg-blue-50'}">
+                        ${isApproved ? 'Revoke Approval' : 'Approve Access'}
+                    </button>
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
+window.toggleApproval = async (uid, currentStatus) => {
+    try {
+        // 1. SECURITY FIX: Ensure Admin Document Exists
+        const currentUser = auth.currentUser;
+        if (!currentUser) {
+            alert("You are not logged in.");
+            return;
+        }
+
+        const adminRef = doc(db, "federations", currentUser.uid);
+        const adminSnap = await getDoc(adminRef);
+
+        if (!adminSnap.exists()) {
+            console.warn("Admin doc missing. Creating now to satisfy Security Rules...");
+            await setDoc(adminRef, {
+                email: currentUser.email,
+                role: "federation",
+                createdAt: new Date().toISOString()
+            });
+        }
+
+        const userRef = doc(db, currentTab, uid);
+        const newStatus = currentStatus ? "pending" : "approved";
+
+        // Prepare update object
+        const updateData = {
+            "federationApproval.status": newStatus,
+            "federationApproval.updatedAt": new Date().toISOString()
+        };
+
+        let generatedId = null;
+
+        // If approving a COACH who doesn't have a Reg ID yet, generate one
+        if (newStatus === "approved" && currentTab === "coaches") {
+            // Check if user already has one (from local state to save read)
+            const userInList = allUsers.find(u => u.id === uid);
+            if (userInList && !userInList.registrationNumber) {
+                // Generate Format: FED-COACH-YYYY-[RANDOM_4]
+                const year = new Date().getFullYear();
+                const random = Math.floor(1000 + Math.random() * 9000); // 1000-9999
+                generatedId = `FED-COACH-${year}-${random}`;
+                updateData.registrationNumber = generatedId;
+            } else if (userInList) {
+                generatedId = userInList.registrationNumber; // Keep existing
+            }
+        }
+
+        // Use setDoc with merge: true for robustness
+        await setDoc(userRef, updateData, { merge: true });
+
+        // Optimistic Update
+        const userIdx = allUsers.findIndex(u => u.id === uid);
+        if (userIdx > -1) {
+            allUsers[userIdx].federationApproval = { status: newStatus };
+            if (generatedId) allUsers[userIdx].registrationNumber = generatedId; // Update local state
+
+            const userData = allUsers[userIdx];
+
+            // --- WHATSAPP NOTIFICATION ---
+            if (newStatus === "approved") {
+                const phone = userData.phone || userData.personalInfo?.phone || userData.personal?.phone || userData.mobile;
+                const name = userData.fullName || userData.personal?.fullName || userData.username;
+
+                if (phone) {
+                    let msg = `Congratulations ${name}! Your Talent Tracker profile has been APPROVED by the Federation.`;
+
+                    if (generatedId) {
+                        msg += ` Your Official Registration Number is: *${generatedId}*. Please keep this code safe as it verifies your professional status.`;
+                    }
+
+                    msg += ` Check your dashboard: ${window.location.origin}/index.html`;
+
+                    sendWhatsAppNotification(phone, msg);
+                }
+            }
+
+            applyFilters();
+        }
+    } catch (err) {
+        console.error("Approval Error:", err);
+        alert("Failed to update status. Please check permissions.");
+    }
+};
+
+// --- EVENTS ---
+if (userSearch) userSearch.addEventListener("input", applyFilters);
+if (statusFilter) statusFilter.addEventListener("change", applyFilters);
+
+// Dropdown Toggle Logic (Fixes "Broken" Logout Button)
+const navUserBtn = document.getElementById("navUserBtn");
+const navUserDropdown = document.getElementById("navUserDropdown");
+
+if (navUserBtn) {
+    navUserBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        navUserDropdown.classList.toggle('hidden');
+    });
+}
+
+window.addEventListener('click', () => {
+    if (navUserDropdown) navUserDropdown.classList.add('hidden');
+});
+
+// Mobile Menu Logic
 const mobileMenuButton = document.getElementById("mobileMenuButton");
 const mobileMenu = document.getElementById("mobileMenu");
 const mobileBackdrop = document.getElementById("mobileMenuBackdrop");
 const mobileBackBtn = document.getElementById("mobileBackBtn");
-const mobileLogoutBtn = document.getElementById("mobileLogoutBtn");
 
-// Hero Section & Actions
-const heroUserDisplay = document.getElementById("heroUserDisplay"); // "Welcome [Name]!" text
-const logoutBtn = document.getElementById("logoutBtn");
-const createProfileBtn = document.getElementById("createProfileBtn");
-
-// =======================================================
-// 4. MOBILE MENU LOGIC
-// Handles sliding the mobile menu in and out.
-// =======================================================
 const toggleMobileMenu = (show) => {
     if (show) {
         mobileBackdrop.classList.remove("hidden");
@@ -65,116 +322,11 @@ const toggleMobileMenu = (show) => {
     }
 };
 
-if (mobileMenuButton) {
-    mobileMenuButton.addEventListener('click', () => toggleMobileMenu(true));
-}
-
-if (mobileBackBtn) {
-    mobileBackBtn.addEventListener('click', () => toggleMobileMenu(false));
-}
-
-if (mobileBackdrop) {
-    mobileBackdrop.addEventListener('click', () => toggleMobileMenu(false));
-}
-
-// =======================================================
-// 5. AUTHENTICATION STATE OBSERVER
-// This runs automatically when the page loads to check
-// if a user is logged in.
-// =======================================================
-onAuthStateChanged(auth, async (user) => {
-    if (user) {
-        // --- USER IS LOGGED IN ---
-
-        // Use real username (Firestore > DisplayName > LocalStorage > Email Prefix)
-        let name = user.displayName || localStorage.getItem("tt_username");
-        let profilePic = null;
-
-        try {
-            const docRef = doc(db, "federations", user.uid);
-            const docSnap = await getDoc(docRef);
-
-            if (docSnap.exists()) {
-                const data = docSnap.data();
-                // Show dashboard link if profile exists
-                if (navDashboardLink) navDashboardLink.classList.remove("hidden");
-                if (mobileDashboardLink) mobileDashboardLink.classList.remove("hidden");
-
-                name = data.username || data.name?.split(" ")[0] || name;
-                profilePic = data.profilePic || null;
-                if (name) localStorage.setItem("tt_username", name);
-            }
-        } catch (err) {
-            console.error("Error checking profile:", err);
-        }
-
-        if (!name) name = user.email.split("@")[0];
-
-        // Update UI with Profile Data
-        const navBtnText = document.getElementById("navBtnText");
-        const navPic = document.getElementById("navUserPic");
-        const navImg = document.getElementById("navUserImg");
-        const mobilePic = document.getElementById("mobileUserPic");
-        const mobileImg = document.getElementById("mobileUserImg");
-
-        if (navBtnText) navBtnText.textContent = name;
-        if (navUserEmail) navUserEmail.textContent = user.email;
-        if (mobileUserName) mobileUserName.textContent = name;
-        if (heroUserDisplay) heroUserDisplay.textContent = name;
-
-        // Show Profile Pics
-        if (navPic) navPic.classList.remove("hidden");
-        if (mobilePic) mobilePic.classList.remove("hidden");
-
-        if (profilePic) {
-            if (navImg) { navImg.src = profilePic; navImg.classList.remove("hidden"); }
-            if (mobileImg) { mobileImg.src = profilePic; mobileImg.classList.remove("hidden"); }
-        } else {
-            if (navImg) navImg.classList.add("hidden");
-            if (mobileImg) mobileImg.classList.add("hidden");
-        }
-
-    } else {
-        // --- USER IS NOT LOGGED IN ---
-        // Security Check: If someone tries to visit this page directly
-        // without logging in, redirect them back to the landing page.
-        window.location.href = "index.html";
-    }
-});
-
-// =======================================================
-// 6. DROPDOWN TOGGLE LOGIC
-// Handles showing/hiding the logout menu on Desktop.
-// =======================================================
-if (navUserBtn) {
-    navUserBtn.addEventListener('click', (e) => {
-        // Stop the click from bubbling up to the window (which would close it immediately)
-        e.stopPropagation();
-        // Toggle the 'hidden' class to show/hide
-        navUserDropdown.classList.toggle('hidden');
-    });
-}
-
-// Close dropdown if user clicks anywhere else on the screen
-window.addEventListener('click', () => {
-    if (navUserDropdown) navUserDropdown.classList.add('hidden');
-});
-
-// =======================================================
-// 7. BUTTON ACTION HANDLERS
-// =======================================================
-
-// "Create Profile" Button
-// Redirects user to the form page to fill in their details
-if (createProfileBtn) {
-    createProfileBtn.addEventListener("click", () => {
-        alert("Federation Profile creation is coming soon!");
-        // window.location.href = "create-federation-profile.html";
-    });
-}
+if (mobileMenuButton) mobileMenuButton.addEventListener('click', () => toggleMobileMenu(true));
+if (mobileBackBtn) mobileBackBtn.addEventListener('click', () => toggleMobileMenu(false));
+if (mobileBackdrop) mobileBackdrop.addEventListener('click', () => toggleMobileMenu(false));
 
 // Logout Logic
-// Signs the user out of Firebase and redirects to Home
 const handleLogout = async () => {
     try {
         await signOut(auth);
@@ -186,6 +338,5 @@ const handleLogout = async () => {
     }
 };
 
-// Attach logout logic to both Desktop and Mobile buttons
-if (logoutBtn) logoutBtn.addEventListener("click", handleLogout);
-if (mobileLogoutBtn) mobileLogoutBtn.addEventListener("click", handleLogout);
+document.getElementById("logoutBtn")?.addEventListener("click", handleLogout);
+document.getElementById("mobileLogoutBtn")?.addEventListener("click", handleLogout);

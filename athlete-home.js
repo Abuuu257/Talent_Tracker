@@ -5,6 +5,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
 import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+import { initWhatsAppSupport } from "./ui-utils.js";
 
 // =======================================================
 // 2. FIREBASE CONFIGURATION
@@ -90,18 +91,6 @@ onAuthStateChanged(auth, async (user) => {
         const navDashboardLink = document.getElementById("navDashboardLink");
         const mobileDashboardLink = document.getElementById("mobileDashboardLink");
 
-        try {
-            const docRef = doc(db, "athletes", user.uid);
-            const docSnap = await getDoc(docRef);
-
-            if (docSnap.exists()) {
-                if (navDashboardLink) navDashboardLink.classList.remove("hidden");
-                if (mobileDashboardLink) mobileDashboardLink.classList.remove("hidden");
-            }
-        } catch (err) {
-            console.error("Error checking profile:", err);
-        }
-
         // Use real username (Firestore > DisplayName > LocalStorage > Email Prefix)
         let name = user.displayName || localStorage.getItem("tt_username");
         let profilePic = null;
@@ -146,27 +135,26 @@ onAuthStateChanged(auth, async (user) => {
             if (navImg) { navImg.src = profilePic; navImg.classList.remove("hidden"); }
             if (mobileImg) { mobileImg.src = profilePic; mobileImg.classList.remove("hidden"); }
         } else {
-            if (navImg) navImg.classList.add("hidden");
-            if (mobileImg) mobileImg.classList.add("hidden");
+            const defaultPic = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=012A61&color=fff`;
+            if (navImg) { navImg.src = defaultPic; navImg.classList.remove("hidden"); }
+            if (mobileImg) { mobileImg.src = defaultPic; mobileImg.classList.remove("hidden"); }
         }
+
+        // Init Support
+        initWhatsAppSupport('Athlete');
 
     } else {
         // --- USER IS NOT LOGGED IN ---
-        // Security Check: If someone tries to visit this page directly
-        // without logging in, redirect them back to the landing page.
         window.location.href = "index.html";
     }
 });
 
 // =======================================================
 // 6. DROPDOWN TOGGLE LOGIC
-// Handles showing/hiding the logout menu on Desktop.
 // =======================================================
 if (navUserBtn) {
     navUserBtn.addEventListener('click', (e) => {
-        // Stop the click from bubbling up to the window (which would close it immediately)
         e.stopPropagation();
-        // Toggle the 'hidden' class to show/hide
         navUserDropdown.classList.toggle('hidden');
     });
 }
@@ -181,7 +169,6 @@ window.addEventListener('click', () => {
 // =======================================================
 
 // "Create Profile" Button
-// Redirects user to the form page to fill in their details
 if (createProfileBtn) {
     createProfileBtn.addEventListener("click", () => {
         window.location.href = "createprofile.html";
@@ -189,7 +176,6 @@ if (createProfileBtn) {
 }
 
 // Logout Logic
-// Signs the user out of Firebase and redirects to Home
 const handleLogout = async () => {
     try {
         await signOut(auth);

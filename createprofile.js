@@ -30,7 +30,12 @@ const eventTimeLimits = {
     "200m": { min: 19.0, max: 45.0 },
     "400m": { min: 43.0, max: 120.0 },
     "800m": { min: 100.0, max: 300.0 },
-    "1200m": { min: 160.0, max: 500.0 }
+    "1200m": { min: 160.0, max: 500.0 },
+    "1500m": { min: 200.0, max: 600.0 },
+    "5000m": { min: 700.0, max: 1800.0 },
+    "10000m": { min: 1500.0, max: 4000.0 },
+    "Long Jump": { min: 3.0, max: 10.0 }, // using max as distance placeholder if needed, but the labels are PBs
+    "High Jump": { min: 1.0, max: 3.0 }
 };
 
 // --- 2. UI HELPERS (Messages & Errors) ---
@@ -296,11 +301,15 @@ window.addEventRow = function (data = null) {
                     <option value="400m">400m</option>
                     <option value="800m">800m</option>
                     <option value="1200m">1200m</option>
+                    <option value="1500m">1500m</option>
+                    <option value="5000m">5000m</option>
+                    <option value="Long Jump">Long Jump</option>
+                    <option value="High Jump">High Jump</option>
                 </select>
             </div>
             <div>
-                <label class="text-xs font-semibold text-gray-500 uppercase">PB (Sec) <span class="text-red-500">*</span></label>
-                <input type="number" step="0.01" class="input event-time" placeholder="e.g. 10.5">
+                <label class="text-xs font-semibold text-gray-500 uppercase">Personal Best <span class="text-red-500">*</span></label>
+                <input type="number" step="0.01" class="input event-time" placeholder="e.g. 10.5 or 5.2">
             </div>
             <div>
                 <label class="text-xs font-semibold text-gray-500 uppercase">Experience</label>
@@ -338,25 +347,28 @@ if (document.getElementById("eventsContainer") && !new URLSearchParams(window.lo
 
 // --- 7. INPUT VALIDATION LOGIC ---
 
-// DOB: Age Limit 10+
+// DOB: Age Limit 14-100
 const dobInput = document.getElementById("dob");
 if (dobInput) {
+    // Set max date to 14 years ago, min date to 100 years ago
+    const today = new Date();
+    const minDate = new Date(today.getFullYear() - 100, today.getMonth(), today.getDate());
+    const maxDate = new Date(today.getFullYear() - 14, today.getMonth(), today.getDate());
+
+    dobInput.min = minDate.toISOString().split("T")[0];
+    dobInput.max = maxDate.toISOString().split("T")[0];
+
     dobInput.addEventListener("change", function () {
         const dob = new Date(this.value);
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-
         let age = today.getFullYear() - dob.getFullYear();
         const m = today.getMonth() - dob.getMonth();
-        if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) {
-            age--;
-        }
+        if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) { age--; }
 
-        if (dob > today) {
-            toggleError("err-dob", "Date cannot be in future.");
+        if (age < 14) {
+            toggleError("err-dob", "You must be at least 14 years old to register.");
             this.value = "";
-        } else if (age < 10) {
-            toggleError("err-dob", "You must be at least 10 years old to register.");
+        } else if (age > 100) {
+            toggleError("err-dob", "Please enter a realistic date of birth.");
             this.value = "";
         } else {
             toggleError("err-dob", "");
@@ -415,21 +427,37 @@ window.submitProfile = async function () {
     const requiredIds = ["fullName", "dob", "gender", "phone", "email", "street", "city", "category", "height", "weight"];
     let hasRequiredError = false;
 
-    // Helper: Check File Inputs (Require only if empty AND no preview)
-    const checkFile = (id, prevId) => {
+    // Helper: Check File Inputs
+    const checkFile = (id, prevId, isOptional = false) => {
         const input = document.getElementById(id);
         const prev = document.getElementById(prevId);
-        // Only run if input exists in HTML
-        if (input) {
-            // Error if: Files empty AND (Preview missing OR Preview hidden)
-            if (input.files.length === 0 && (!prev || prev.classList.contains('hidden'))) {
-                toggleError(`err-${id}`, "Required");
+        if (!input) return;
+
+        const file = input.files[0];
+        const hasExisting = prev && !prev.classList.contains('hidden');
+
+        if (!file && !hasExisting && !isOptional) {
+            toggleError(`err-${id}`, "Required");
+            hasRequiredError = true;
+            return;
+        }
+
+        if (file) {
+            // Type Validation
+            const validTypes = id === "profilePic" ? ["image/jpeg", "image/png", "image/jpg"] : ["image/jpeg", "image/png", "image/jpg", "application/pdf"];
+            if (!validTypes.includes(file.type)) {
+                toggleError(`err-${id}`, "Invalid format (JPG/PNG" + (id === "profilePic" ? "" : "/PDF") + " only)");
+                hasRequiredError = true;
+            }
+            // Size Validation (2MB)
+            if (file.size > 2 * 1024 * 1024) {
+                toggleError(`err-${id}`, "File too large (Max 2MB)");
                 hasRequiredError = true;
             }
         }
     };
 
-    checkFile("profilePic", "preview_profilePic");
+    checkFile("profilePic", "preview_profilePic", true); // Optional
     checkFile("idDoc", "preview_idDoc");
 
     // Check consent only if visible
@@ -440,10 +468,16 @@ window.submitProfile = async function () {
     // Check Text Inputs
     requiredIds.forEach(id => {
         const el = document.getElementById(id);
-        if (!el) return; // Skip if element not found in HTML
+        if (!el) return;
         if (!el.value) {
             toggleError(`err-${id}`, "Required");
             hasRequiredError = true;
+        } else {
+            // Format Validations
+            if (id === "phone" && !/^\+?[0-9\s-]{10,15}$/.test(el.value)) {
+                toggleError("err-phone", "Invalid phone format (+94XXXXXXXXX)");
+                hasRequiredError = true;
+            }
         }
     });
 
@@ -529,14 +563,18 @@ window.submitProfile = async function () {
             if (snap.exists()) existingDocs = snap.data().documents || {};
         }
 
-        // Process NEW files only
+        // Process NEW files only - UPLOAD TO STORAGE
         const fileData = {};
         const singleFiles = ["profilePic", "idDoc", "consentDoc", "clubIDDoc"];
 
         for (const id of singleFiles) {
             const input = document.getElementById(id);
             if (input && input.files.length > 0) {
-                fileData[id] = await fileToBase64(input.files[0]);
+                const file = input.files[0];
+                const filePath = `athletes/${currentUID}/${id}_${Date.now()}_${file.name}`;
+                const storageRef = ref(storage, filePath);
+                const snapshot = await uploadBytes(storageRef, file);
+                fileData[id] = await getDownloadURL(snapshot.ref);
             }
         }
 

@@ -51,9 +51,11 @@
             <div class="hidden md:flex space-x-8 font-semibold text-black items-center">
                 <a href="federation-home.html"
                     class="hover:text-[var(--primary)] transition-colors duration-200 text-[var(--primary)]">Home</a>
-                <a href="dashboard.html"
-                    class="hover:text-[var(--primary)] transition-colors duration-200">Dashboard</a>
-                <a href="#" class="hover:text-[var(--primary)] transition-colors duration-200">Event</a>
+                <a href="coach-athletes.html"
+                    class="hover:text-[var(--primary)] transition-colors duration-200">Discover Athletes</a>
+                <a href="coach-squads.html" class="hover:text-[var(--primary)] transition-colors duration-200">Squad
+                    Management</a>
+                <a href="#" class="hover:text-[var(--primary)] transition-colors duration-200">Events</a>
 
                 <div id="navUserArea" class="relative group">
                     <button id="navUserBtn"
@@ -135,14 +137,22 @@
                     </svg>
                     Home
                 </a>
-                <a href="dashboard.html"
+                <a href="coach-athletes.html"
                     class="flex items-center gap-4 py-3 text-lg font-bold text-gray-800 hover:text-[var(--primary)] transition-colors">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z">
+                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                    Discover Athletes
+                </a>
+                <a href="coach-squads.html"
+                    class="flex items-center gap-4 py-3 text-lg font-bold text-gray-800 hover:text-[var(--primary)] transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z">
                         </path>
                     </svg>
-                    Dashboard
+                    Squad Management
                 </a>
                 <a href="#"
                     class="flex items-center gap-4 py-3 text-lg font-bold text-gray-800 hover:text-[var(--primary)] transition-colors">
@@ -151,7 +161,7 @@
                             d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z">
                         </path>
                     </svg>
-                    Event
+                    Events
                 </a>
             </div>
 
@@ -185,36 +195,73 @@
         </div>
     </div>
 
-    <section id="heroSection" class="pt-32 pb-16 max-w-7xl mx-auto px-6">
-        <div class="grid grid-cols-1 lg:grid-cols-10 gap-12 items-center">
-
-            <div
-                class="lg:col-span-5 flex flex-col justify-center items-center text-center lg:text-left lg:items-start">
-
-                <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-[var(--primary)] leading-tight mb-8">
-                    Welcome, <span id="heroUserDisplay" class="text-white drop-shadow-sm">Federation</span> <br>
-                    <span class="block mt-4 text-[var(--primary)]">Oversee Sports Development.</span>
-                </h1>
-
-                <p class="text-lg sm:text-xl text-black/80 font-medium mb-12 leading-relaxed max-w-xl">
-                    Manage events, verify athletes, and monitor national performance with integrated tools.
-                </p>
-
-                <button id="viewAnalyticsBtn"
-                    class="bg-[var(--secondary)] text-white px-12 py-5 rounded-full shadow-2xl hover:bg-[var(--primary)] transition-all duration-300 font-bold text-xl transform hover:scale-105 active:scale-95">
-                    View Platform
-                </button>
+    <!-- USER MANAGEMENT SECTION -->
+    <section class="max-w-7xl mx-auto px-6 pb-20 pt-32">
+        <div class="bg-white/40 backdrop-blur-xl rounded-[3rem] p-8 md:p-12 border border-white/20 shadow-2xl">
+            <div class="flex flex-col md:flex-row justify-between items-end mb-10 gap-6">
+                <div>
+                    <h2 class="text-3xl font-black text-[var(--primary)] mb-2">User Management 🔐</h2>
+                    <p class="text-slate-600 font-semibold tracking-wide">Verify professional coaching credentials and
+                        oversee athlete registration.</p>
+                </div>
+                <div class="flex bg-white/50 p-1 rounded-2xl border border-white/20">
+                    <button id="tabCoaches" onclick="switchManagementTab('coaches')"
+                        class="px-6 py-2 rounded-xl text-sm font-black transition-all bg-[var(--primary)] text-white shadow-lg">COACHES</button>
+                    <button id="tabAthletes" onclick="switchManagementTab('athletes')"
+                        class="px-6 py-2 rounded-xl text-sm font-black transition-all text-slate-500 hover:text-[var(--primary)]">ATHLETES</button>
+                </div>
             </div>
 
-            <div class="lg:col-span-5 flex justify-center lg:justify-end">
-                <div class="relative group">
-                    <div
-                        class="absolute -inset-1 bg-gradient-to-r from-[var(--secondary)] to-[var(--primary)] rounded-[2.5rem] blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200">
-                    </div>
-                    <img src="assets/Will’s Track Photo.jpeg"
-                        class="relative w-full max-w-md lg:max-w-lg h-auto lg:h-[550px] object-cover rounded-[2.5rem] shadow-2xl transform transition duration-500 hover:scale-[1.02]"
-                        alt="Federation" />
+            <!-- SEARCH & FILTERS -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                <div class="relative md:col-span-2">
+                    <input type="text" id="userSearch" placeholder="Search by name or email..."
+                        class="w-full bg-white border-2 border-slate-100 rounded-2xl px-12 py-4 focus:outline-none focus:border-[var(--secondary)] font-semibold transition-all shadow-sm">
+                    <svg class="w-5 h-5 absolute left-5 top-1/2 -translate-y-1/2 text-slate-400" fill="none"
+                        stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
                 </div>
+                <select id="statusFilter"
+                    class="bg-white border-2 border-slate-100 rounded-2xl px-6 py-4 focus:outline-none focus:border-[var(--secondary)] font-black text-xs uppercase tracking-widest shadow-sm">
+                    <option value="all">All Status</option>
+                    <option value="pending">Pending Only</option>
+                    <option value="approved">Approved Only</option>
+                </select>
+            </div>
+
+            <!-- TABLE CONTAINER -->
+            <div class="overflow-x-auto bg-white rounded-[2rem] border border-slate-100 shadow-sm">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-50">
+                            <th
+                                class="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100">
+                                User Details</th>
+                            <th id="colSpecific1"
+                                class="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100">
+                                Specialization</th>
+                            <th
+                                class="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 text-center">
+                                Status</th>
+                            <th
+                                class="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 text-right">
+                                Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="userTableBody">
+                        <!-- Dynamic Rows -->
+                        <tr>
+                            <td colspan="4" class="px-8 py-20 text-center">
+                                <div
+                                    class="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--primary)] mx-auto mb-4">
+                                </div>
+                                <p class="text-sm font-bold text-slate-400">Loading directory...</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
     </section>

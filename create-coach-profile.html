@@ -232,7 +232,7 @@
                             </div>
                             <div class="flex-grow">
                                 <input type="file" id="coachPhoto" accept="image/*" class="input p-2 text-sm bg-white">
-                                <p class="helper-text">Formats: JPG, PNG. Max size: 2MB.</p>
+                                <p class="helper-text">Formats: Photo or PDF. Max size: 5MB.</p>
                             </div>
                         </div>
                     </div>
@@ -357,9 +357,9 @@
                 <div class="space-y-6">
                     <div>
                         <label class="label-style">Highest Coaching Qualification</label>
-                        <input type="text" id="highestQual" class="input" placeholder="e.g. IAAF Level 4 Certification"
-                            required>
-                        <p id="error-highestQual" class="error-text">Highest qualification is required.</p>
+                        <input type="text" id="highestQual" class="input"
+                            placeholder="e.g. AFC A-License, Diploma in PE" required>
+                        <p id="error-highestQual" class="error-text">Qualification is required.</p>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
@@ -376,10 +376,10 @@
                     </div>
                     <div>
                         <label class="label-style">Certificate Upload (PDF / Image)</label>
-                        <input type="file" id="certDoc" accept="application/pdf,image/*" class="input p-2 bg-white"
+                        <input type="file" id="certDoc" accept="image/*, application/pdf" class="input p-2 bg-white"
                             required>
                         <p id="error-certDoc" class="error-text">Certification document is required.</p>
-                        <p class="helper-text">Proof of qualification for verification.</p>
+                        <p class="helper-text">Proof of qualification (Photo/PDF).</p>
                     </div>
                 </div>
             </div>

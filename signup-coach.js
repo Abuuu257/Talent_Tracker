@@ -54,11 +54,12 @@ form.addEventListener("submit", async (e) => {
     clearError();
 
     const username = document.getElementById("username").value.trim();
+    const regNo = document.getElementById("regNo").value.trim();
     const email = document.getElementById("email").value.trim();
     const password = document.getElementById("password").value;
 
     // BASIC VALIDATION
-    if (!username || !email || !password) {
+    if (!username || !email || !password || !regNo) {
         showError("All fields are required.");
         return;
     }
@@ -75,6 +76,20 @@ form.addEventListener("submit", async (e) => {
 
     try {
         showLoading();
+        // 0️⃣ CHECK REGISTRATION NUMBER
+        const codesRef = collection(db, "registration_codes");
+        const qCode = query(codesRef, where("code", "==", regNo), where("status", "==", "active"));
+        const codeSnap = await getDocs(qCode);
+
+        if (codeSnap.empty) {
+            // For testing/fallback if collection doesn't exist yet, we might want to allow a master code, 
+            // but strict requirement says "if coach doesnt have this... shouldnt be able to register".
+            // We will enforce it.
+            showError("Invalid or inactive Registration Number. Contact Federation.");
+            hideLoading();
+            return;
+        }
+
         // 1️⃣ CHECK USERNAME UNIQUENESS ACROSS ALL ROLES
         const taken = await isUsernameTaken(username);
         if (taken) {
@@ -91,7 +106,9 @@ form.addEventListener("submit", async (e) => {
         await saveCoachProfile(cred.user.uid, {
             username: username,
             email: email,
-            role: "coach"
+            role: "coach",
+            registrationNumber: regNo,
+            federationApproval: { status: "approved", date: new Date().toISOString() } // Auto-approve if they have a code? Or just Pending? Code implies pre-approval.
         });
 
         // 5️⃣ LOGOUT USER (Don't auto-login after signup)

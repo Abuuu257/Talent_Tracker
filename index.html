@@ -302,13 +302,14 @@
         <h3
           class="font-black text-lg md:text-2xl mb-4 md:mb-8 text-center md:text-left uppercase tracking-widest opacity-90">
           Login as</h3>
-        <div class="grid grid-cols-3 md:grid-cols-1 gap-2 md:gap-4 px-1 md:px-0">
+        <div class="grid grid-cols-2 md:grid-cols-1 gap-2 md:gap-4 px-1 md:px-0">
           <button id="role-athlete" onclick="switchRole('athlete')"
             class="role-btn px-2 md:px-6 py-3 rounded-xl md:rounded-2xl bg-white/10 hover:bg-white/20 text-white text-[11px] sm:text-xs md:text-base font-bold transition-all border border-white/20 active:scale-95">Athlete</button>
           <button id="role-coach" onclick="switchRole('coach')"
             class="role-btn px-2 md:px-6 py-3 rounded-xl md:rounded-2xl bg-white/10 hover:bg-white/20 text-white text-[11px] sm:text-xs md:text-base font-bold transition-all border border-white/20 active:scale-95">Coach</button>
           <button id="role-federation" onclick="switchRole('federation')"
-            class="role-btn px-2 md:px-6 py-3 rounded-xl md:rounded-2xl bg-white/10 hover:bg-white/20 text-white text-[11px] sm:text-xs md:text-base font-bold transition-all border border-white/20 active:scale-95 leading-tight">Federation</button>
+            class="role-btn px-2 md:px-6 py-3 rounded-xl md:rounded-2xl bg-white/10 hover:bg-white/20 text-white text-[11px] sm:text-xs md:text-base font-bold transition-all border border-white/20 active:scale-95 leading-tight col-span-2 md:col-span-1">Admin
+            (Fed)</button>
         </div>
       </div>
 
@@ -381,18 +382,14 @@
                   class="bg-white px-4 text-gray-400 font-bold tracking-widest">New Here?</span></div>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <a href="signup-athlete.html" class="px-2 py-3 rounded-xl border-2 border-gray-100
                         text-gray-900 font-bold text-xs hover:border-[#2E5F9E] hover:text-[#2E5F9E] transition-all">
-                ATHLETE
+                ATHLETE SIGNUP
               </a>
               <a href="signup-coach.html" class="px-2 py-3 rounded-xl border-2 border-gray-100
                         text-gray-900 font-bold text-xs hover:border-[#2E5F9E] hover:text-[#2E5F9E] transition-all">
-                COACH
-              </a>
-              <a href="signup-federation.html" class="px-2 py-3 rounded-xl border-2 border-gray-100
-                        text-gray-900 font-bold text-xs hover:border-[#2E5F9E] hover:text-[#2E5F9E] transition-all">
-                FEDERATION
+                COACH SIGNUP
               </a>
             </div>
           </div>
@@ -422,8 +419,10 @@
 
     window.switchRole = (role) => {
       currentRole = role;
-      document.getElementById("loginTitle").innerText =
-        role.charAt(0).toUpperCase() + role.slice(1) + " Login";
+      let title = role.charAt(0).toUpperCase() + role.slice(1) + " Login";
+      if (role === 'federation') title = "Federation Admin Login";
+
+      document.getElementById("loginTitle").innerText = title;
 
       // Highlight active role button
       document.querySelectorAll('.role-btn').forEach(btn => {
@@ -431,8 +430,10 @@
         btn.classList.add('bg-white/10', 'text-white');
       });
       const activeBtn = document.getElementById(`role-${role}`);
-      activeBtn.classList.remove('bg-white/10', 'text-white');
-      activeBtn.classList.add('bg-white', 'text-[#2E5F9E]');
+      if (activeBtn) {
+        activeBtn.classList.remove('bg-white/10', 'text-white');
+        activeBtn.classList.add('bg-white', 'text-[#2E5F9E]');
+      }
 
       // RESET INPUTS & ERRORS
       document.getElementById("login-identifier").value = "";
@@ -502,8 +503,9 @@
           if (navImg) { navImg.src = picUrl; navImg.classList.remove("hidden"); }
           if (mobileImg) { mobileImg.src = picUrl; mobileImg.classList.remove("hidden"); }
         } else {
-          if (navImg) navImg.classList.add("hidden");
-          if (mobileImg) mobileImg.classList.add("hidden");
+          const defaultPic = `https://ui-avatars.com/api/?name=${encodeURIComponent(username)}&background=012A61&color=fff`;
+          if (navImg) { navImg.src = defaultPic; navImg.classList.remove("hidden"); }
+          if (mobileImg) { mobileImg.src = defaultPic; mobileImg.classList.remove("hidden"); }
         }
       } else {
         // Logged out
@@ -558,11 +560,23 @@
         // Mobile Menu specific
         if (mobileDashLink) mobileDashLink.classList.remove("hidden");
         if (mobileLogoutBtn) mobileLogoutBtn.classList.remove("hidden");
+
+        // AUTO-REDIRECT TO DASHBOARD IF LOGGED IN
+        // (Ensures user stays in their role if they navigate back to home)
+        const currentPath = window.location.pathname;
+        if (currentPath.endsWith("index.html") || currentPath === "/" || currentPath.endsWith("/")) {
+          const role = localStorage.getItem("tt_role") || "athlete";
+          window.location.href = role + "-home.html";
+        }
       } else {
         // User is logged out
         setNavbarUser("Login");
         if (mobileDashLink) mobileDashLink.classList.add("hidden");
         if (mobileLogoutBtn) mobileLogoutBtn.classList.add("hidden");
+
+        // Ensure localStorage is cleared when Firebase sees a logout
+        localStorage.removeItem("tt_username");
+        localStorage.removeItem("tt_role");
       }
     });
 
@@ -643,13 +657,32 @@
 
       navLoginBtn?.addEventListener("click", (e) => {
         const loggedInUser = localStorage.getItem("tt_username");
-        if (loggedInUser) return;
+        if (loggedInUser) {
+          // If logged in, toggle the logout dropdown
+          e.preventDefault();
+          const dropdown = document.getElementById("logoutDropdown");
+          dropdown.classList.toggle("hidden");
+          return;
+        }
         e.preventDefault();
         openLogin();
       });
 
       mobileLoginBtn?.addEventListener("click", handleUserBtnClick);
       document.getElementById("getStartBtn")?.addEventListener("click", handleGetStarted);
+
+      // Desktop Logout Button
+      const logoutBtn = document.getElementById("logoutBtn");
+      logoutBtn?.addEventListener("click", async () => {
+        try {
+          await signOut(auth);
+          localStorage.removeItem("tt_username");
+          localStorage.removeItem("tt_role");
+          window.location.reload();
+        } catch (e) {
+          console.error("Logout error:", e);
+        }
+      });
 
       if (mobileLogoutBtn) {
         mobileLogoutBtn.addEventListener("click", async () => {
@@ -663,6 +696,14 @@
           }
         });
       }
+
+      // Hide dropdown on outside click
+      document.addEventListener("click", (e) => {
+        const dropdown = document.getElementById("logoutDropdown");
+        if (dropdown && !navLoginBtn.contains(e.target) && !dropdown.contains(e.target)) {
+          dropdown.classList.add("hidden");
+        }
+      });
     });
 
     /* ===============================
@@ -680,22 +721,34 @@
         return;
       }
 
+      // --- HARDCODED ADMIN CHECK ---
+      if (currentRole === "federation") {
+        if (username === "admin" && password === "admin123") {
+          showLoading();
+          localStorage.setItem("tt_username", "Federation Admin");
+          localStorage.setItem("tt_role", "federation");
+          // Set dummy email to trigger auth-like behavior if needed, 
+          // but for simplicity we'll just redirect since fed is admin.
+          window.location.href = "federation-home.html";
+          return;
+        } else {
+          showErr("Invalid Admin Credentials.");
+          return;
+        }
+      }
+
       loginBtn.disabled = true;
       loginBtn.textContent = "Logging in...";
       showLoading();
 
       try {
-        // 1️⃣ Find user by username + collection
-        // DETERMINE THE COLLECTION BASED ON ROLE
         let collectionName = "users";
         if (currentRole === "athlete") collectionName = "athletes";
         else if (currentRole === "coach") collectionName = "coaches";
-        else if (currentRole === "federation") collectionName = "federations";
 
         const q = query(
           collection(db, collectionName),
           where("username", "==", username)
-          // We don't need 'role' check anymore since we are in the specific collection
         );
 
         const snap = await getDocs(q);
@@ -707,22 +760,17 @@
 
         const userData = snap.docs[0].data();
         const email = userData.email;
-        const realUsername = userData.username; // Use the one from DB
+        const realUsername = userData.username;
 
-        // 2️⃣ Firebase Auth
         await signInWithEmailAndPassword(auth, email, password);
 
-        // 3️⃣ Success
         localStorage.setItem("tt_username", realUsername);
         localStorage.setItem("tt_role", currentRole);
 
-        // Redirect to Role-Based Home
         if (currentRole === "athlete") {
           window.location.href = "athlete-home.html";
         } else if (currentRole === "coach") {
           window.location.href = "coach-home.html";
-        } else if (currentRole === "federation") {
-          window.location.href = "federation-home.html";
         }
 
       } catch (e) {
@@ -739,43 +787,7 @@
       }
     });
   </script>
-  <script>
-    const dropdown = document.getElementById("logoutDropdown");
-    const logoutBtn = document.getElementById("logoutBtn");
 
-    // Toggle dropdown when username is clicked
-    navLoginBtn.addEventListener("click", (e) => {
-      const loggedInUser = localStorage.getItem("tt_username");
-      if (!loggedInUser) return; // normal login behaviour
-
-      e.preventDefault();
-      dropdown.classList.toggle("hidden");
-    });
-
-    // Logout action
-    logoutBtn.addEventListener("click", async () => {
-      try {
-        await signOut(auth);
-      } catch (e) {
-        console.error("Logout error:", e);
-      }
-
-      // Clear session
-      localStorage.removeItem("tt_username");
-      localStorage.removeItem("tt_role");
-
-      // Reset UI
-      navLoginBtn.textContent = "Login";
-      dropdown.classList.add("hidden");
-    });
-
-    document.addEventListener("click", (e) => {
-      if (!navLoginBtn.contains(e.target) && !dropdown.contains(e.target)) {
-        dropdown.classList.add("hidden");
-      }
-    });
-
-  </script>
 
 </body>
 

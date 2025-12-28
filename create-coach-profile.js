@@ -1,6 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
 import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-storage.js";
 import { showLoading, hideLoading, showSuccessModal } from "./ui-utils.js";
 
 // --- 1. FIREBASE CONFIGURATION ---
@@ -16,6 +17,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
+const storage = getStorage(app);
 
 let currentUID = null;
 const form = document.getElementById("coachProfileForm");
@@ -71,6 +73,31 @@ onAuthStateChanged(auth, async (user) => {
                 previewIcon.classList.add("hidden");
             }
         }
+
+        // --- UPDATE NAVBAR (Username & Pic) ---
+        const navBtnText = document.getElementById("navBtnText");
+        const navUserPic = document.getElementById("navUserPic");
+        const navUserImg = document.getElementById("navUserImg");
+
+        let username = user.displayName || localStorage.getItem("tt_username") || user.email.split("@")[0];
+        let profilePic = null;
+
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            username = data.username || data.personalInfo?.fullName?.split(" ")[0] || username;
+            profilePic = data.documents?.profilePic || data.profilePic || null;
+            if (username) localStorage.setItem("tt_username", username);
+        }
+
+        if (navBtnText) navBtnText.textContent = username;
+
+        if (navUserPic && navUserImg) {
+            navUserPic.classList.remove("hidden");
+            const avatar = profilePic || `https://ui-avatars.com/api/?name=${encodeURIComponent(username)}&background=012A61&color=fff`;
+            navUserImg.src = avatar;
+            navUserImg.classList.remove("hidden");
+        }
+
     } catch (err) {
         console.error("Error checking coach profile:", err);
     }
@@ -137,6 +164,44 @@ form.addEventListener("submit", async (e) => {
 
     requiredFields.forEach(validateField);
 
+    // DOB check (Min 14)
+    const dobInput = document.getElementById("dob");
+    if (dobInput.value) {
+        const dob = new Date(dobInput.value);
+        const today = new Date();
+        let age = today.getFullYear() - dob.getFullYear();
+        if (today.getMonth() < dob.getMonth() || (today.getMonth() === dob.getMonth() && today.getDate() < dob.getDate())) age--;
+        if (age < 14 || age > 100) {
+            document.getElementById("error-dob").textContent = "Invalid age (Min 14)";
+            document.getElementById("error-dob").classList.add("visible");
+            isValid = false;
+        }
+    }
+
+    // Experience check
+    const expInput = document.getElementById("experience");
+    if (expInput.value && parseInt(expInput.value) < 0) {
+        document.getElementById("error-experience").textContent = "Experience cannot be negative";
+        document.getElementById("error-experience").classList.add("visible");
+        isValid = false;
+    }
+
+    // Phone check
+    const phoneInput = document.getElementById("phone");
+    if (phoneInput.value && !/^\+?[0-9\s-]{10,15}$/.test(phoneInput.value)) {
+        document.getElementById("error-phone").textContent = "Invalid phone format";
+        document.getElementById("error-phone").classList.add("visible");
+        isValid = false;
+    }
+
+    // NIC check
+    const nicInput = document.getElementById("nic");
+    if (nicInput.value && nicInput.value.length < 5) {
+        document.getElementById("error-nic").textContent = "Invalid NIC/Passport";
+        document.getElementById("error-nic").classList.add("visible");
+        isValid = false;
+    }
+
     // Check certificate file (mandatory)
     const certInput = document.getElementById("certDoc");
     const certErr = document.getElementById("error-certDoc");
@@ -147,6 +212,13 @@ form.addEventListener("submit", async (e) => {
         certErr.classList.add("visible");
         certInput.classList.add("input-error");
         isValid = false;
+    } else {
+        const file = certInput.files[0];
+        if (file.size > 2 * 1024 * 1024) {
+            certErr.textContent = "File too large (Max 2MB)";
+            certErr.classList.add("visible");
+            isValid = false;
+        }
     }
 
     // Check checkboxes
@@ -157,6 +229,10 @@ form.addEventListener("submit", async (e) => {
 
     if (!terms.checked || !dataUsage.checked || !auth.checked) {
         consentErr.classList.add("visible");
+        // Highlight missing ones
+        if (!terms.checked) terms.closest('.checkbox-container').classList.add('input-error');
+        if (!dataUsage.checked) dataUsage.closest('.checkbox-container').classList.add('input-error');
+        if (!auth.checked) auth.closest('.checkbox-container').classList.add('input-error');
         isValid = false;
     }
 
@@ -168,19 +244,38 @@ form.addEventListener("submit", async (e) => {
     try {
         showLoading();
 
-        // Convert files to Base64
+        // Convert files to Base64 (Only if within limit)
         let photoBase64 = null;
         if (photoInput.files.length > 0) {
-            photoBase64 = await fileToBase64(photoInput.files[0]);
+            const file = photoInput.files[0];
+            if (file.size > 2 * 1024 * 1024) {
+                alert("Profile photo exceeds 2MB limit.");
+                hideLoading();
+                return;
+            }
+            photoBase64 = await fileToBase64(file);
         } else {
             // Keep old pic if exists
             const previewImgEl = document.getElementById("previewImg");
-            if (!previewImgEl.classList.contains("hidden")) {
+            if (previewImgEl && !previewImgEl.classList.contains("hidden")) {
                 photoBase64 = previewImgEl.src;
             }
         }
 
-        const certBase64 = await fileToBase64(certInput.files[0]);
+        let certUrl = null;
+        if (certInput.files.length > 0) {
+            const file = certInput.files[0];
+            const filePath = `coaches/${currentUID}/cert_${Date.now()}_${file.name}`;
+            const storageRef = ref(storage, filePath);
+            const snapshot = await uploadBytes(storageRef, file);
+            certUrl = await getDownloadURL(snapshot.ref);
+        } else {
+            // Check if we already have a cert (in case of re-submission)
+            const coachSnap = await getDoc(doc(db, "coaches", currentUID));
+            if (coachSnap.exists()) {
+                certUrl = coachSnap.data().certDoc;
+            }
+        }
 
         const profileData = {
             // 1. Personal
@@ -210,7 +305,7 @@ form.addEventListener("submit", async (e) => {
             highestQual: document.getElementById("highestQual").value,
             issuingAuthority: document.getElementById("issuingAuthority").value,
             certId: document.getElementById("certId").value,
-            certDoc: certBase64,
+            certDoc: certUrl,
 
             // 5. Availability (Optional)
             availDays: document.getElementById("availDays").value || "",

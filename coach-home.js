@@ -1,10 +1,11 @@
-
 // 1. IMPORTS
 // Importing necessary Firebase services from the CDN.
 // =======================================================
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
-import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-storage.js";
+import { initWhatsAppSupport } from "./ui-utils.js";
 
 // =======================================================
 // 2. FIREBASE CONFIGURATION
@@ -23,6 +24,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
+const storage = getStorage(app);
 
 // =======================================================
 // 3. DOM ELEMENT SELECTION
@@ -33,6 +35,8 @@ const db = getFirestore(app);
 const navUserBtn = document.getElementById("navUserBtn");          // Button displaying username
 const navUserDropdown = document.getElementById("navUserDropdown"); // The hidden dropdown menu
 const navUserEmail = document.getElementById("navUserEmail");      // Email display inside dropdown
+const navUserPic = document.getElementById("navUserPic");
+const navProfileInput = document.getElementById("navProfileInput");
 
 // Mobile Elements
 const mobileUserName = document.getElementById("mobileUserName");
@@ -46,6 +50,7 @@ const mobileLogoutBtn = document.getElementById("mobileLogoutBtn");
 const heroUserDisplay = document.getElementById("heroUserDisplay"); // "Welcome [Name]!" text
 const logoutBtn = document.getElementById("logoutBtn");
 const createProfileBtn = document.getElementById("createProfileBtn");
+const contactSupportBtn = document.getElementById("contactSupportBtn");
 
 // =======================================================
 // 4. MOBILE MENU LOGIC
@@ -86,9 +91,14 @@ onAuthStateChanged(auth, async (user) => {
     if (user) {
         // --- USER IS LOGGED IN ---
 
-        // Use real username (Firestore > DisplayName > LocalStorage > Email Prefix)
-        let name = user.displayName || localStorage.getItem("tt_username");
+        // State Selectors
+        const onboarding = document.getElementById("onboardingState");
+        const dashboard = document.getElementById("dashboardState");
+
+        let name = user.displayName || localStorage.getItem("tt_username") || user.email.split("@")[0];
         let profilePic = null;
+        let isProfileComplete = false;
+        let isVerified = false;
 
         try {
             const docRef = doc(db, "coaches", user.uid);
@@ -96,23 +106,70 @@ onAuthStateChanged(auth, async (user) => {
 
             if (docSnap.exists()) {
                 const data = docSnap.data();
-                // Show dashboard link if profile exists
-                if (navDashboardLink) navDashboardLink.classList.remove("hidden");
-                if (mobileDashboardLink) mobileDashboardLink.classList.remove("hidden");
+                isProfileComplete = !!data.personalInfo?.fullName;
+                isVerified = data.federationApproval?.status === "approved" || data.registrationNumber; // Verify if reg number exists
 
-                name = data.username || data.fullName?.split(" ")[0] || name;
-                profilePic = data.profilePic || null; // Coach might have direct profilePic field
+                // Prioritize Username, then Full Name
+                name = data.username || data.personalInfo?.fullName?.split(" ")[0] || name;
+                profilePic = data.profilePic || data.documents?.profilePic || null;
+
                 if (name) localStorage.setItem("tt_username", name);
+
+                // Update Stats
+                const statSquads = document.getElementById("statSquads");
+                const statAthletes = document.getElementById("statAthletes");
+                if (statSquads) statSquads.textContent = (data.squads || []).length.toString().padStart(2, '0');
+                if (statAthletes) statAthletes.textContent = (data.favorites || []).length.toString().padStart(2, '0');
             }
         } catch (err) {
             console.error("Error checking profile:", err);
         }
 
-        if (!name) name = user.email.split("@")[0];
+        // 1. Toggle States
+        if (onboarding && dashboard) {
+            // If they have username/reg number, show dashboard? Or strictly profile complete?
+            // Usually dashboard is safer.
+            // Let's stick to profile complete logic, but maybe update if username exists.
+
+            if (isProfileComplete || name) {
+                // Actually, let's keep the Profile Incomplete logic if personalInfo is missing,
+                // but ensure we show the dashboard if they are somewhat active.
+            }
+
+            if (isProfileComplete) {
+                onboarding.classList.add("hidden");
+                dashboard.classList.remove("hidden");
+                // Fetch Watchlist Resume if on dashboard
+                fetchWatchlist(user.uid);
+            } else {
+                onboarding.classList.remove("hidden");
+                dashboard.classList.add("hidden");
+            }
+        }
+
+        // 2. Toggle Verification Banner/Badge
+        const vBanner = document.getElementById("verificationBanner");
+        const vBadge = document.getElementById("verificationBadge");
+        const vText = document.getElementById("verificationStatusText");
+
+        if (isProfileComplete && !isVerified) {
+            if (vBanner) vBanner.classList.remove("hidden");
+        } else {
+            if (vBanner) vBanner.classList.add("hidden");
+        }
+
+        if (vBadge) {
+            if (isVerified) {
+                vBadge.classList.replace("bg-amber-500", "bg-green-500");
+                if (vText) vText.textContent = "Verified Professional";
+            } else {
+                vBadge.classList.replace("bg-green-500", "bg-amber-500");
+                if (vText) vText.textContent = "Pending Verification";
+            }
+        }
 
         // Update UI with Profile Data
         const navBtnText = document.getElementById("navBtnText");
-        const navPic = document.getElementById("navUserPic");
         const navImg = document.getElementById("navUserImg");
         const mobilePic = document.getElementById("mobileUserPic");
         const mobileImg = document.getElementById("mobileUserImg");
@@ -123,57 +180,136 @@ onAuthStateChanged(auth, async (user) => {
         if (heroUserDisplay) heroUserDisplay.textContent = name;
 
         // Show Profile Pics
-        if (navPic) navPic.classList.remove("hidden");
+        if (navUserPic) navUserPic.classList.remove("hidden");
         if (mobilePic) mobilePic.classList.remove("hidden");
 
-        if (profilePic) {
-            if (navImg) { navImg.src = profilePic; navImg.classList.remove("hidden"); }
-            if (mobileImg) { mobileImg.src = profilePic; mobileImg.classList.remove("hidden"); }
-        } else {
-            if (navImg) navImg.classList.add("hidden");
-            if (mobileImg) mobileImg.classList.add("hidden");
+        const displayPic = profilePic || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=012A61&color=fff`;
+
+        if (navImg) { navImg.src = displayPic; navImg.classList.remove("hidden"); }
+        if (mobileImg) { mobileImg.src = displayPic; mobileImg.classList.remove("hidden"); }
+
+        // Setup Profile Pic Upload
+        if (navUserPic && navProfileInput) {
+            const handleUpload = async (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                // Show some loading state
+                // Note: we don't have a global loading spinner here easily accessible (imported from ui-utils maybe?)
+                navBtnText.textContent = "Uploading...";
+
+                try {
+                    const filePath = `coaches/${user.uid}/profilePic_${Date.now()}`;
+                    const storageRef = ref(storage, filePath);
+                    const snapshot = await uploadBytes(storageRef, file);
+                    const url = await getDownloadURL(snapshot.ref);
+
+                    // Save
+                    await updateDoc(doc(db, "coaches", user.uid), {
+                        "documents.profilePic": url
+                    });
+
+                    // Update UI
+                    navImg.src = url;
+                    mobileImg.src = url;
+                    navBtnText.textContent = name;
+                    alert("Profile picture updated!");
+
+                } catch (err) {
+                    console.error(err);
+                    alert("Failed to upload image.");
+                    navBtnText.textContent = name;
+                }
+            };
+
+            navProfileInput.onchange = handleUpload;
+            navUserPic.onclick = (e) => {
+                e.stopPropagation(); // Prevent dropdown toggle
+                navProfileInput.click();
+            }
         }
+
+        // Init WhatsApp Support
+        initWhatsAppSupport('Coach');
 
     } else {
         // --- USER IS NOT LOGGED IN ---
-        // Security Check: If someone tries to visit this page directly
-        // without logging in, redirect them back to the landing page.
         window.location.href = "index.html";
     }
 });
 
 // =======================================================
 // 6. DROPDOWN TOGGLE LOGIC
-// Handles showing/hiding the logout menu on Desktop.
 // =======================================================
 if (navUserBtn) {
     navUserBtn.addEventListener('click', (e) => {
-        // Stop the click from bubbling up to the window (which would close it immediately)
         e.stopPropagation();
-        // Toggle the 'hidden' class to show/hide
         navUserDropdown.classList.toggle('hidden');
     });
 }
 
-// Close dropdown if user clicks anywhere else on the screen
 window.addEventListener('click', () => {
     if (navUserDropdown) navUserDropdown.classList.add('hidden');
 });
 
 // =======================================================
-// 7. BUTTON ACTION HANDLERS
+// 7. WATCHLIST RESUME LOGIC (Fetching Favorites)
 // =======================================================
+async function fetchWatchlist(uid) {
+    const summaryList = document.getElementById("watchlistSummary");
+    const emptyState = document.getElementById("emptyWatchlist");
+    if (!summaryList) return;
 
-// "Create Profile" Button
-// Redirects user to the form page to fill in their details
-if (createProfileBtn) {
-    createProfileBtn.addEventListener("click", () => {
-        window.location.href = "create-coach-profile.html";
-    });
+    try {
+        const coachRef = doc(db, "coaches", uid);
+        const coachSnap = await getDoc(coachRef);
+
+        if (coachSnap.exists()) {
+            const favorites = coachSnap.data().favorites || [];
+
+            if (favorites.length === 0) {
+                summaryList.innerHTML = "";
+                if (emptyState) emptyState.classList.remove("hidden");
+                return;
+            }
+
+            if (emptyState) emptyState.classList.add("hidden");
+            summaryList.innerHTML = ""; // Clear loader
+
+            // Fetch first 4 favorites
+            const previewIds = favorites.slice(0, 4);
+
+            for (const athleteId of previewIds) {
+                const aSnap = await getDoc(doc(db, "athletes", athleteId));
+                if (aSnap.exists()) {
+                    const aData = aSnap.data();
+                    const aName = aData.personal?.fullName || aData.username || "Athlete";
+                    const aPic = aData.documents?.profilePic || "https://ui-avatars.com/api/?name=" + transformName(aName);
+                    const aCat = aData.athletic?.category || "U20";
+
+                    const card = document.createElement("a");
+                    card.href = `view-athlete.html?id=${athleteId}`;
+                    card.className = "bg-white p-6 rounded-[2rem] border border-slate-100 hover:shadow-xl transition-all flex flex-col items-center text-center group";
+                    card.innerHTML = `
+                        <img src="${aPic}" class="w-16 h-16 rounded-2xl object-cover mb-4 border-2 border-slate-50 group-hover:scale-110 transition-transform">
+                        <p class="font-black text-[var(--primary)] text-sm mb-1">${aName}</p>
+                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">${aCat} Category</span>
+                    `;
+                    summaryList.appendChild(card);
+                }
+            }
+        }
+    } catch (err) {
+        console.error("Error fetching watchlist:", err);
+        summaryList.innerHTML = `<p class="text-xs text-red-500">Failed to load watchlist.</p>`;
+    }
+}
+
+function transformName(name) {
+    return encodeURIComponent(name);
 }
 
 // Logout Logic
-// Signs the user out of Firebase and redirects to Home
 const handleLogout = async () => {
     try {
         await signOut(auth);
@@ -185,6 +321,12 @@ const handleLogout = async () => {
     }
 };
 
-// Attach logout logic to both Desktop and Mobile buttons
 if (logoutBtn) logoutBtn.addEventListener("click", handleLogout);
 if (mobileLogoutBtn) mobileLogoutBtn.addEventListener("click", handleLogout);
+
+// Contact Support Handler
+contactSupportBtn?.addEventListener("click", () => {
+    const supportNumber = "+94xxxxxxxxx";
+    const msg = encodeURIComponent("Hello Talent Tracker Support, I am a coach and I need some help.");
+    window.open(`https://wa.me/${supportNumber.replace(/\D/g, '')}?text=${msg}`, '_blank');
+});
