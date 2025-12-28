@@ -1,50 +1,9 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    // Helper function to check if the user is authenticated
-    function isAuthenticated() {
-      return request.auth != null;
-    }
-    
-    // Helper function to check if the user is accessing their own document
-    function isOwner(userId) {
-      return request.auth.uid == userId;
-    }
-
-    // Helper function to check if the user is a federation admin
-    function isFederation() {
-      return exists(/databases/$(database)/documents/federations/$(request.auth.uid));
-    }
-
-    // USERS (Keep for legacy or generic access if needed)
-    match /users/{userId} {
-      allow read: if true;
-      allow write: if isOwner(userId) || isFederation();
-    }
-
-    // ATHLETES
-    match /athletes/{userId} {
-      allow read: if true; 
-      allow write: if isOwner(userId) || isFederation();
-    }
-
-    // COACHES
-    match /coaches/{userId} {
-      allow read: if true;
-      allow write: if isOwner(userId) || isFederation();
-    }
-
-    // FEDERATIONS
-    match /federations/{userId} {
-      allow read: if true;
-      allow write: if isOwner(userId);
-    }
-    
-    // REGISTRATION CODES
-    match /registration_codes/{codeId} {
-        allow read: if true;
-        allow write: if isFederation();
+    // ALLOW EVERYTHING DEBUGGING
+    match /{document=**} {
+      allow read, write: if true;
     }
   }
 }

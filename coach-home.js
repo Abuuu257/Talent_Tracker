@@ -107,7 +107,7 @@ onAuthStateChanged(auth, async (user) => {
             if (docSnap.exists()) {
                 const data = docSnap.data();
                 isProfileComplete = !!data.personalInfo?.fullName;
-                isVerified = data.federationApproval?.status === "approved" || data.registrationNumber; // Verify if reg number exists
+                isVerified = data.federationApproval?.status === "approved"; // Strict Admin Approval Only
 
                 // Prioritize Username, then Full Name
                 name = data.username || data.personalInfo?.fullName?.split(" ")[0] || name;
@@ -125,25 +125,42 @@ onAuthStateChanged(auth, async (user) => {
             console.error("Error checking profile:", err);
         }
 
-        // 1. Toggle States
+        // 1. Toggle States & Access Control
         if (onboarding && dashboard) {
-            // If they have username/reg number, show dashboard? Or strictly profile complete?
-            // Usually dashboard is safer.
-            // Let's stick to profile complete logic, but maybe update if username exists.
 
-            if (isProfileComplete || name) {
-                // Actually, let's keep the Profile Incomplete logic if personalInfo is missing,
-                // but ensure we show the dashboard if they are somewhat active.
-            }
+            // STRICT ACCESS CONTROL:
+            // If verification is pending, DO NOT show dashboard.
+            // Show a "Pending Approval" state instead.
 
-            if (isProfileComplete) {
-                onboarding.classList.add("hidden");
-                dashboard.classList.remove("hidden");
-                // Fetch Watchlist Resume if on dashboard
-                fetchWatchlist(user.uid);
-            } else {
+            if (!isVerified) {
+                // If we don't have a dedicated pending screen div, we can hijack the onboarding div
+                // or alter the content dynamically.
                 onboarding.classList.remove("hidden");
                 dashboard.classList.add("hidden");
+
+                // Customize onboarding message for pending users
+                const heroTitle = onboarding.querySelector("h1");
+                const heroSubtitle = onboarding.querySelector("p");
+                const ctaBtn = document.getElementById("createProfileBtn");
+
+                if (heroTitle) heroTitle.textContent = "Profile Under Review";
+                if (heroSubtitle) heroSubtitle.textContent = `Your registration is currently pending approval from the Federation. \nStatus: ${data.federationApproval?.status?.toUpperCase() || "PENDING"}`;
+                if (ctaBtn) ctaBtn.classList.add("hidden"); // Hide button so they verify wait
+
+            } else if (isProfileComplete) {
+                // Verified AND Profile Complete -> Show Dashboard
+                onboarding.classList.add("hidden");
+                dashboard.classList.remove("hidden");
+                fetchWatchlist(user.uid);
+            } else {
+                // Verified BUT Profile Incomplete -> Show Onboarding (Create Profile)
+                onboarding.classList.remove("hidden");
+                dashboard.classList.add("hidden");
+                // Reset text in case it was modified by pending state
+                const heroTitle = onboarding.querySelector("h1");
+                if (heroTitle) heroTitle.textContent = "Welcome, Coach!";
+                const ctaBtn = document.getElementById("createProfileBtn");
+                if (ctaBtn) ctaBtn.classList.remove("hidden");
             }
         }
 

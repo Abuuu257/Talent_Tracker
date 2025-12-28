@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
-import { getFirestore, doc, getDoc, getDocs, collection, query, where, updateDoc, setDoc } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+import { getFirestore, doc, getDoc, getDocs, collection, addDoc, query, where, updateDoc, setDoc } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
 import { initWhatsAppSupport, sendWhatsAppNotification } from "./ui-utils.js";
 
 const firebaseConfig = {
@@ -200,25 +200,11 @@ function renderTable() {
 }
 
 window.toggleApproval = async (uid, currentStatus) => {
+    console.log("Toggle Approval Cliked:", uid, currentStatus);
     try {
         // 1. SECURITY FIX: Ensure Admin Document Exists
-        const currentUser = auth.currentUser;
-        if (!currentUser) {
-            alert("You are not logged in.");
-            return;
-        }
-
-        const adminRef = doc(db, "federations", currentUser.uid);
-        const adminSnap = await getDoc(adminRef);
-
-        if (!adminSnap.exists()) {
-            console.warn("Admin doc missing. Creating now to satisfy Security Rules...");
-            await setDoc(adminRef, {
-                email: currentUser.email,
-                role: "federation",
-                createdAt: new Date().toISOString()
-            });
-        }
+        // Using global 'auth' object directly without alert since redirection happens on load
+        // if (!auth.currentUser) return; // Silent fail if not logged in (auth listener handles redirect)
 
         const userRef = doc(db, currentTab, uid);
         const newStatus = currentStatus ? "pending" : "approved";
@@ -229,23 +215,6 @@ window.toggleApproval = async (uid, currentStatus) => {
             "federationApproval.updatedAt": new Date().toISOString()
         };
 
-        let generatedId = null;
-
-        // If approving a COACH who doesn't have a Reg ID yet, generate one
-        if (newStatus === "approved" && currentTab === "coaches") {
-            // Check if user already has one (from local state to save read)
-            const userInList = allUsers.find(u => u.id === uid);
-            if (userInList && !userInList.registrationNumber) {
-                // Generate Format: FED-COACH-YYYY-[RANDOM_4]
-                const year = new Date().getFullYear();
-                const random = Math.floor(1000 + Math.random() * 9000); // 1000-9999
-                generatedId = `FED-COACH-${year}-${random}`;
-                updateData.registrationNumber = generatedId;
-            } else if (userInList) {
-                generatedId = userInList.registrationNumber; // Keep existing
-            }
-        }
-
         // Use setDoc with merge: true for robustness
         await setDoc(userRef, updateData, { merge: true });
 
@@ -253,33 +222,38 @@ window.toggleApproval = async (uid, currentStatus) => {
         const userIdx = allUsers.findIndex(u => u.id === uid);
         if (userIdx > -1) {
             allUsers[userIdx].federationApproval = { status: newStatus };
-            if (generatedId) allUsers[userIdx].registrationNumber = generatedId; // Update local state
-
             const userData = allUsers[userIdx];
 
-            // --- WHATSAPP NOTIFICATION ---
+            // --- AUTOMATED EMAIL NOTIFICATION VIA FIREBASE TRIGGER ---
             if (newStatus === "approved") {
-                const phone = userData.phone || userData.personalInfo?.phone || userData.personal?.phone || userData.mobile;
+                const email = userData.email;
                 const name = userData.fullName || userData.personal?.fullName || userData.username;
 
-                if (phone) {
-                    let msg = `Congratulations ${name}! Your Talent Tracker profile has been APPROVED by the Federation.`;
-
-                    if (generatedId) {
-                        msg += ` Your Official Registration Number is: *${generatedId}*. Please keep this code safe as it verifies your professional status.`;
+                if (email) {
+                    // Create a document in the 'mail' collection.
+                    // This assumes you have the 'Trigger Email' extension installed in Firebase.
+                    try {
+                        const mailCollection = collection(db, "mail"); // Standard collection name for the extension
+                        await addDoc(mailCollection, {
+                            to: [email],
+                            message: {
+                                subject: "Federation Approval - Talent Tracker",
+                                text: `Dear ${name},\n\nCongratulations! Your Talent Tracker profile has been APPROVED by the Federation.\n\nYou now have full access to the platform. Check your dashboard: ${window.location.origin}/index.html\n\nBest Regards,\nThe Federation`,
+                                html: `<p>Dear ${name},</p><p>Congratulations! Your Talent Tracker profile has been <strong>APPROVED</strong> by the Federation.</p><p>You now have full access to the platform.</p><p><a href="${window.location.origin}/index.html">Click here to Login</a></p><p>Best Regards,<br>The Federation</p>`
+                            }
+                        });
+                        alert("Access Approved! Automated email sent via Firebase.");
+                    } catch (mailError) {
+                        console.error("Failed to queue email:", mailError);
+                        alert("Access approved, but failed to queue automated email.");
                     }
-
-                    msg += ` Check your dashboard: ${window.location.origin}/index.html`;
-
-                    sendWhatsAppNotification(phone, msg);
                 }
             }
-
             applyFilters();
         }
     } catch (err) {
         console.error("Approval Error:", err);
-        alert("Failed to update status. Please check permissions.");
+        alert("Action failed: " + err.message);
     }
 };
 
