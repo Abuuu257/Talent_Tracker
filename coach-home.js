@@ -128,39 +128,44 @@ onAuthStateChanged(auth, async (user) => {
         // 1. Toggle States & Access Control
         if (onboarding && dashboard) {
 
-            // STRICT ACCESS CONTROL:
-            // If verification is pending, DO NOT show dashboard.
-            // Show a "Pending Approval" state instead.
+            // Logic:
+            // 1. If Profile Incomplete -> ALWAYS show Onboarding (regardless of approval status).
+            //    This allows new users to fill their details so Admins can see them.
+            // 2. If Profile Complete BUT Pending -> Show "Under Review".
+            // 3. If Profile Complete AND Approved -> Show Dashboard.
 
-            if (!isVerified) {
-                // If we don't have a dedicated pending screen div, we can hijack the onboarding div
-                // or alter the content dynamically.
+            if (!isProfileComplete) {
+                // CASE 1: Profile Incomplete -> Allow Creation
                 onboarding.classList.remove("hidden");
                 dashboard.classList.add("hidden");
 
-                // Customize onboarding message for pending users
+                // Ensure text is default
+                const heroTitle = onboarding.querySelector("h1");
+                const heroSubtitle = onboarding.querySelector("p");
+                const ctaBtn = document.getElementById("createProfileBtn");
+
+                if (heroTitle) heroTitle.textContent = "Welcome, Coach!";
+                if (heroSubtitle) heroSubtitle.textContent = "Let's set up your professional profile.";
+                if (ctaBtn) ctaBtn.classList.remove("hidden");
+
+            } else if (!isVerified) {
+                // CASE 2: Profile Complete BUT Pending -> Show Block Screen
+                onboarding.classList.remove("hidden");
+                dashboard.classList.add("hidden");
+
                 const heroTitle = onboarding.querySelector("h1");
                 const heroSubtitle = onboarding.querySelector("p");
                 const ctaBtn = document.getElementById("createProfileBtn");
 
                 if (heroTitle) heroTitle.textContent = "Profile Under Review";
-                if (heroSubtitle) heroSubtitle.textContent = `Your registration is currently pending approval from the Federation. \nStatus: ${data.federationApproval?.status?.toUpperCase() || "PENDING"}`;
-                if (ctaBtn) ctaBtn.classList.add("hidden"); // Hide button so they verify wait
+                if (heroSubtitle) heroSubtitle.textContent = `Your profile is complete and waiting for Federation approval.\nStatus: ${data.federationApproval?.status?.toUpperCase() || "PENDING"}`;
+                if (ctaBtn) ctaBtn.classList.add("hidden");
 
-            } else if (isProfileComplete) {
-                // Verified AND Profile Complete -> Show Dashboard
+            } else {
+                // CASE 3: Approved & Complete -> Dashboard
                 onboarding.classList.add("hidden");
                 dashboard.classList.remove("hidden");
                 fetchWatchlist(user.uid);
-            } else {
-                // Verified BUT Profile Incomplete -> Show Onboarding (Create Profile)
-                onboarding.classList.remove("hidden");
-                dashboard.classList.add("hidden");
-                // Reset text in case it was modified by pending state
-                const heroTitle = onboarding.querySelector("h1");
-                if (heroTitle) heroTitle.textContent = "Welcome, Coach!";
-                const ctaBtn = document.getElementById("createProfileBtn");
-                if (ctaBtn) ctaBtn.classList.remove("hidden");
             }
         }
 

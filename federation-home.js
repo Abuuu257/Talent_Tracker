@@ -141,6 +141,12 @@ function applyFilters() {
         const email = (u.email || "").toLowerCase();
         const matchesSearch = name.includes(searchTerm) || email.includes(searchTerm);
 
+        // CHECK IF PROFILE IS COMPLETE
+        // Coaches have 'personalInfo', Athletes have 'personal'
+        const isProfileComplete = (u.personalInfo?.fullName) || (u.personal?.fullName) || false;
+
+        if (!isProfileComplete) return false; // Hide incomplete profiles
+
         const isApproved = u.federationApproval?.status === "approved";
         if (statusVal === 'pending') return matchesSearch && !isApproved;
         if (statusVal === 'approved') return matchesSearch && isApproved;

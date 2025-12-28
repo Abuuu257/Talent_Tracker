@@ -20,21 +20,20 @@ const db = getFirestore(app);
 let allAthletes = [];
 let coachSquads = {}; // athleteId -> squadName
 let currentCoachId = null;
+let availableSquads = []; // Array of squad names
 
 // DOM Elements
-const pools = {
-    unassigned: document.getElementById("unassignedPool"),
-    elite: document.getElementById("eliteSquad"),
-    development: document.getElementById("devSquad"),
-    trial: document.getElementById("trialSquad")
-};
+const unassignedPool = document.getElementById("unassignedPool");
+const unassignedCount = document.getElementById("unassignedCount");
+const squadsContainer = document.getElementById("squadsContainer");
 
-const counts = {
-    unassigned: document.getElementById("unassignedCount"),
-    elite: document.getElementById("eliteCount"),
-    development: document.getElementById("devCount"),
-    trial: document.getElementById("trialCount")
-};
+// Modal Elements
+const createSquadBtn = document.getElementById("createSquadBtn");
+const createSquadModal = document.getElementById("createSquadModal");
+const modalContent = document.getElementById("modalContent");
+const cancelSquadBtn = document.getElementById("cancelSquadBtn");
+const confirmSquadBtn = document.getElementById("confirmSquadBtn");
+const newSquadNameInput = document.getElementById("newSquadName");
 
 // --- 2. AUTHENTICATION ---
 onAuthStateChanged(auth, async (user) => {
@@ -52,6 +51,10 @@ onAuthStateChanged(auth, async (user) => {
             if (coachDoc.exists()) {
                 const data = coachDoc.data();
                 coachSquads = data.squads || {};
+
+                // Load Squad Names (empty by default if none exist)
+                availableSquads = data.squadNames || [];
+
                 name = data.username || data.personalInfo?.fullName?.split(" ")[0] || name;
                 profilePic = data.profilePic || data.documents?.profilePic || null;
                 if (name) localStorage.setItem("tt_username", name);
@@ -115,17 +118,7 @@ if (logoutBtn) {
     });
 }
 
-async function fetchCoachSquads() {
-    try {
-        const coachDoc = await getDoc(doc(db, "coaches", currentCoachId));
-        if (coachDoc.exists()) {
-            coachSquads = coachDoc.data().squads || {};
-        }
-    } catch (err) {
-        console.error("Error fetching squads:", err);
-    }
-}
-
+// --- 3. SQUAD MANAGEMENT LOGIC ---
 async function fetchAthletes() {
     try {
         const athletesCol = collection(db, "athletes");
@@ -136,7 +129,7 @@ async function fetchAthletes() {
                 id: doc.id,
                 ...doc.data()
             }))
-            .filter(athlete => athlete.personal && athlete.personal.fullName); // Requirements: Registered only
+            .filter(athlete => athlete.personal && athlete.personal.fullName);
 
         renderPools();
     } catch (err) {
@@ -145,22 +138,78 @@ async function fetchAthletes() {
 }
 
 function renderPools() {
-    // Clear all pools
-    Object.values(pools).forEach(p => p.innerHTML = "");
+    // 1. Render Unassigned Pool
+    unassignedPool.innerHTML = "";
+    let unassignedCountVal = 0;
 
-    const counters = { unassigned: 0, elite: 0, development: 0, trial: 0 };
+    // Filter unassigned athletes
+    const unassignedAthletes = allAthletes.filter(a => !coachSquads[a.id] || coachSquads[a.id] === "unassigned");
 
-    allAthletes.forEach(athlete => {
-        const squad = coachSquads[athlete.id] || "unassigned";
+    unassignedAthletes.forEach(athlete => {
         const card = createAthleteCard(athlete);
-        pools[squad].appendChild(card);
-        counters[squad]++;
+        unassignedPool.appendChild(card);
+        unassignedCountVal++;
     });
+    unassignedCount.textContent = unassignedCountVal;
 
-    // Update counts
-    Object.keys(counters).forEach(k => {
-        if (counts[k]) counts[k].textContent = counters[k];
+    // Attach DnD to Unassigned Pool
+    setupPoolDnD(unassignedPool, "unassigned");
+
+
+    // 2. Render Dynamic Squads
+    squadsContainer.innerHTML = "";
+
+    if (availableSquads.length === 0) {
+        squadsContainer.innerHTML = `
+            <div class="col-span-full flex flex-col items-center justify-center py-20 opacity-50">
+                <div class="w-16 h-16 bg-slate-200 rounded-full flex items-center justify-center mb-4">
+                    <svg class="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+                </div>
+                <p class="text-slate-500 font-bold">No squads yet.</p>
+                <p class="text-xs text-slate-400 mt-1">Create your first squad to start assigning athletes.</p>
+            </div>
+        `;
+    }
+
+    availableSquads.forEach((squadName, index) => {
+        // Create Column HTML
+        const colDiv = document.createElement("div");
+        const colorClass = getSquadColor(index); // Helper for colors
+
+        let count = 0;
+        allAthletes.forEach(a => {
+            if (coachSquads[a.id] === squadName) count++;
+        });
+
+        colDiv.innerHTML = `
+            <div class="flex items-center gap-2 mb-4 px-2">
+                <div class="w-3 h-3 rounded-full ${colorClass}"></div>
+                <h2 class="text-xs font-black text-slate-800 uppercase tracking-[0.2em] truncate" title="${squadName}">${squadName}</h2>
+                <span class="ml-auto ${colorClass.replace('bg-', 'bg-opacity-20 text-').replace('500', '600')} bg-gray-100 px-2 py-0.5 rounded text-[10px] font-bold">${count}</span>
+            </div>
+            <div class="squad-column p-4 rounded-[2.5rem] space-y-4" data-squad="${squadName}">
+                <!-- Athletes Here -->
+            </div>
+        `;
+
+        const poolContainer = colDiv.querySelector(".squad-column");
+
+        // Fill Athletes
+        allAthletes.filter(a => coachSquads[a.id] === squadName).forEach(athlete => {
+            const card = createAthleteCard(athlete);
+            poolContainer.appendChild(card);
+        });
+
+        // Attach DnD
+        setupPoolDnD(poolContainer, squadName);
+
+        squadsContainer.appendChild(colDiv);
     });
+}
+
+function getSquadColor(index) {
+    const colors = ["bg-red-500", "bg-blue-500", "bg-amber-500", "bg-emerald-500", "bg-purple-500", "bg-pink-500", "bg-indigo-500"];
+    return colors[index % colors.length];
 }
 
 function createAthleteCard(athlete) {
@@ -193,48 +242,103 @@ function createAthleteCard(athlete) {
     return card;
 }
 
-function setupDragAndDrop() {
-    Object.values(pools).forEach(pool => {
-        pool.addEventListener("dragover", (e) => {
-            e.preventDefault();
-            pool.classList.add("drag-over");
-        });
+function setupPoolDnD(pool, squadName) {
+    pool.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        pool.classList.add("drag-over");
+    });
 
-        pool.addEventListener("dragleave", () => {
-            pool.classList.remove("drag-over");
-        });
+    pool.addEventListener("dragleave", () => {
+        pool.classList.remove("drag-over");
+    });
 
-        pool.addEventListener("drop", async (e) => {
-            e.preventDefault();
-            pool.classList.remove("drag-over");
+    pool.addEventListener("drop", async (e) => {
+        e.preventDefault();
+        pool.classList.remove("drag-over");
 
-            const draggingCard = document.querySelector(".dragging");
-            if (!draggingCard) return;
+        const draggingCard = document.querySelector(".dragging");
+        if (!draggingCard) return;
 
-            const athleteId = draggingCard.dataset.id;
-            const newSquad = pool.dataset.squad || "unassigned";
+        const athleteId = draggingCard.dataset.id;
 
-            if (coachSquads[athleteId] === newSquad) return;
+        // Prevent unnecessary update
+        if (coachSquads[athleteId] === squadName) return;
 
-            // Update State
-            coachSquads[athleteId] = newSquad;
+        // Update State
+        if (squadName === "unassigned") {
+            delete coachSquads[athleteId];
+        } else {
+            coachSquads[athleteId] = squadName;
+        }
 
-            // Update UI
-            renderPools();
-            showToast(`Athlete reassigned to ${newSquad}`);
+        // Update UI
+        renderPools();
+        showToast(`Athlete reassigned to ${squadName === 'unassigned' ? 'Unassigned' : squadName}`);
 
-            // Update Database
-            try {
-                const coachRef = doc(db, "coaches", currentCoachId);
-                await updateDoc(coachRef, {
-                    squads: coachSquads
-                });
-            } catch (err) {
-                console.error("Database Update Failed:", err);
-            }
-        });
+        // Update Database
+        try {
+            const coachRef = doc(db, "coaches", currentCoachId);
+            await updateDoc(coachRef, {
+                squads: coachSquads
+            });
+        } catch (err) {
+            console.error("Database Update Failed:", err);
+        }
     });
 }
+
+// --- 4. CREATE SQUAD FLOW ---
+
+if (createSquadBtn) {
+    createSquadBtn.addEventListener("click", () => {
+        createSquadModal.classList.remove("hidden");
+        setTimeout(() => {
+            modalContent.classList.remove("scale-95", "opacity-0");
+            modalContent.classList.add("scale-100", "opacity-100");
+        }, 10);
+        newSquadNameInput.focus();
+    });
+}
+
+function closeModal() {
+    modalContent.classList.remove("scale-100", "opacity-100");
+    modalContent.classList.add("scale-95", "opacity-0");
+    setTimeout(() => {
+        createSquadModal.classList.add("hidden");
+        newSquadNameInput.value = "";
+    }, 300);
+}
+
+if (cancelSquadBtn) cancelSquadBtn.addEventListener("click", closeModal);
+
+if (confirmSquadBtn) {
+    confirmSquadBtn.addEventListener("click", async () => {
+        const name = newSquadNameInput.value.trim();
+        if (!name) return alert("Please enter a squad name.");
+
+        if (availableSquads.includes(name)) return alert("Squad name already exists.");
+
+        // Update Local State
+        availableSquads.push(name);
+
+        // Save to DB
+        try {
+            const coachRef = doc(db, "coaches", currentCoachId);
+            await updateDoc(coachRef, {
+                squadNames: availableSquads
+            });
+
+            closeModal();
+            renderPools();
+            showToast(`New squad "${name}" created!`);
+
+        } catch (err) {
+            console.error("Error creating squad:", err);
+            alert("Failed to create squad.");
+        }
+    });
+}
+
 
 // Event Listeners
 const exportBtn = document.getElementById("exportPdfBtn");
@@ -256,40 +360,34 @@ function showToast(msg) {
 // --- 7. PDF EXPORT LOGIC ---
 function exportToPDF() {
     const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
+    const docPdf = new jsPDF(); // Renamed to avoid confusion with doc() Firestore
 
     // 1. Header
-    doc.setFillColor(1, 42, 97); // --primary
-    doc.rect(0, 0, 210, 40, 'F');
+    docPdf.setFillColor(1, 42, 97); // --primary
+    docPdf.rect(0, 0, 210, 40, 'F');
 
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(22);
-    doc.setFont("helvetica", "bold");
-    doc.text("TALENT TRACKER - SQUAD ROSTER", 15, 20);
+    docPdf.setTextColor(255, 255, 255);
+    docPdf.setFontSize(22);
+    docPdf.setFont("helvetica", "bold");
+    docPdf.text("TALENT TRACKER - SQUAD ROSTER", 15, 20);
 
-    doc.setFontSize(10);
-    doc.setFont("helvetica", "normal");
-    doc.text(`Generated on: ${new Date().toLocaleDateString()} | Squad Management Report`, 15, 30);
+    docPdf.setFontSize(10);
+    docPdf.setFont("helvetica", "normal");
+    docPdf.text(`Generated on: ${new Date().toLocaleDateString()} | Squad Management Report`, 15, 30);
 
     let currentY = 50;
 
-    // 2. Iterate Squads
-    const squadTypes = [
-        { id: 'elite', label: 'ELITE SQUAD', color: [239, 68, 68] },
-        { id: 'development', label: 'DEVELOPMENT SQUAD', color: [59, 130, 246] },
-        { id: 'trial', label: 'TRIAL POOL', color: [245, 158, 11] }
-    ];
-
-    squadTypes.forEach(squad => {
-        const squadAthletes = allAthletes.filter(a => coachSquads[a.id] === squad.id);
+    // 2. Iterate Dynamic Squads
+    availableSquads.forEach(squadName => {
+        const squadAthletes = allAthletes.filter(a => coachSquads[a.id] === squadName);
 
         if (squadAthletes.length > 0) {
             // Squad Header
-            doc.setFillColor(...squad.color);
-            doc.rect(15, currentY, 180, 8, 'F');
-            doc.setTextColor(255, 255, 255);
-            doc.setFontSize(10);
-            doc.text(squad.label, 20, currentY + 5.5);
+            docPdf.setFillColor(39, 90, 145); // Secondary Blue
+            docPdf.rect(15, currentY, 180, 8, 'F');
+            docPdf.setTextColor(255, 255, 255);
+            docPdf.setFontSize(10);
+            docPdf.text(squadName.toUpperCase(), 20, currentY + 5.5);
 
             currentY += 12;
 
@@ -302,7 +400,7 @@ function exportToPDF() {
                 a.personal?.address?.city || "N/A"
             ]);
 
-            doc.autoTable({
+            docPdf.autoTable({
                 startY: currentY,
                 head: [['#', 'Athlete Name', 'Category', 'Events', 'Location']],
                 body: tableRows,
@@ -314,15 +412,15 @@ function exportToPDF() {
                 }
             });
 
-            currentY = doc.lastAutoTable.finalY + 15;
+            currentY = docPdf.lastAutoTable.finalY + 15;
         }
     });
 
     // Check for overflow or "No assigned" case
     if (Object.keys(coachSquads).length === 0) {
-        doc.setTextColor(100);
-        doc.text("No athletes have been assigned to squads yet.", 15, currentY);
+        docPdf.setTextColor(100);
+        docPdf.text("No athletes have been assigned to squads yet.", 15, currentY);
     }
 
-    doc.save(`TT_Squad_Roster_${new Date().toISOString().slice(0, 10)}.pdf`);
+    docPdf.save(`TT_Squad_Roster_${new Date().toISOString().slice(0, 10)}.pdf`);
 }

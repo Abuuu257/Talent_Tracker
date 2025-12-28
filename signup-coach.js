@@ -54,23 +54,17 @@ form.addEventListener("submit", async (e) => {
     clearError();
 
     const username = document.getElementById("username").value.trim();
-    const mobile = document.getElementById("mobile").value.replace(/\D/g, ''); // Digits only
     const email = document.getElementById("email").value.trim();
     const password = document.getElementById("password").value;
 
     // BASIC VALIDATION
-    if (!username || !email || !password || !mobile) {
+    if (!username || !email || !password) {
         showError("All fields are required.");
         return;
     }
 
     if (username.length < 4) {
         showError("Username must be at least 4 characters.");
-        return;
-    }
-
-    if (mobile.length < 9) {
-        showError("Please enter a valid mobile number.");
         return;
     }
 
@@ -97,7 +91,6 @@ form.addEventListener("submit", async (e) => {
         // 4️⃣ STORE USER IN DATABASE (COACHES)
         await saveCoachProfile(cred.user.uid, {
             username: username,
-            mobile: mobile,
             email: email,
             role: "coach",
             federationApproval: { status: "pending", date: new Date().toISOString() } // Set to pending for Admin approval
