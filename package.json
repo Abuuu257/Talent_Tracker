@@ -1,0 +1,16 @@
+{
+    "name": "talent-tracker",
+    "version": "1.0.0",
+    "description": "Talent Tracker Full-Stack Application",
+    "main": "backend/server.js",
+    "scripts": {
+        "start": "node backend/server.js",
+        "dev": "nodemon backend/server.js",
+        "install-all": "cd backend && npm install",
+        "postinstall": "cd backend && npm install",
+        "db:init": "node backend/init-db.js"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC"
+}

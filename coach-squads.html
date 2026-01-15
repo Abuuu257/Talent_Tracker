@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Squad Management - Talent Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        :root {
+            --primary: #012A61;
+            --secondary: #275A91;
+            --highlight: #FDC787;
+            --background: #F1F5F9;
+        }
+
+        body {
+            font-family: "Poppins", sans-serif;
+            background-color: var(--background);
+        }
+
+        .squad-column {
+            min-height: 500px;
+            background: rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(8px);
+            border: 2px dashed #cbd5e1;
+            transition: all 0.3s ease;
+        }
+
+        .squad-column.drag-over {
+            background: rgba(39, 90, 145, 0.1);
+            border-color: var(--secondary);
+            border-style: solid;
+        }
+
+        .athlete-card {
+            cursor: grab;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .athlete-card:active {
+            cursor: grabbing;
+        }
+
+        .athlete-card.dragging {
+            opacity: 0.5;
+            transform: scale(0.95);
+        }
+    </style>
+</head>
+
+<body class="min-h-screen">
+
+    <nav
+        class="fixed top-0 left-0 w-full bg-[var(--background)]/80 backdrop-blur-md shadow-sm z-[100] border-b border-white/10">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="text-2xl font-extrabold text-[var(--primary)] tracking-tight">Talent Tracker</div>
+
+            <!-- Desktop Menu -->
+            <div class="hidden md:flex space-x-8 font-semibold text-black items-center">
+                <a href="coach-home.html" class="hover:text-[var(--primary)] transition-colors duration-200">Home</a>
+                <a href="coach-dashboard.html"
+                    class="hover:text-[var(--primary)] transition-colors duration-200">Dashboard</a>
+                <a href="coach-athletes.html"
+                    class="hover:text-[var(--primary)] transition-colors duration-200">Discover Athletes</a>
+                <a href="coach-squads.html"
+                    class="hover:text-[var(--primary)] transition-colors duration-200 text-[var(--primary)]">Squad
+                    Management</a>
+                <a href="events.html" class="hover:text-[var(--primary)] transition-colors duration-200">Events</a>
+
+                <div id="navUserArea" class="relative group">
+                    <button id="navUserBtn"
+                        class="px-5 py-2 rounded-full bg-[var(--secondary)] text-white hover:bg-[var(--primary)] transition-all duration-300 font-semibold shadow-lg hover:shadow-xl flex items-center gap-3 transform hover:-translate-y-0.5">
+                        <div id="navUserPic"
+                            class="w-7 h-7 rounded-full bg-white hidden overflow-hidden border border-white/20 shrink-0">
+                            <img id="navUserImg" src="" alt="" class="w-full h-full object-cover hidden">
+                        </div>
+                        <span id="navBtnText">Loading...</span>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7">
+                            </path>
+                        </svg>
+                    </button>
+
+                    <div id="navUserDropdown"
+                        class="hidden absolute right-0 mt-3 w-56 bg-white shadow-2xl rounded-2xl text-black p-4 border border-gray-100 z-50 animate-fade overflow-hidden">
+                        <div class="mb-4 pb-4 border-b border-gray-100">
+                            <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Signed in as</p>
+                            <p id="navUserEmail" class="text-sm font-semibold text-gray-800 break-words leading-tight">
+                            </p>
+                        </div>
+                        <button id="logoutBtn"
+                            class="w-full bg-red-50 text-red-600 py-3 rounded-xl hover:bg-red-100 transition-colors duration-200 text-sm font-bold flex items-center justify-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
+                                </path>
+                            </svg>
+                            Logout
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto pt-28 pb-20 px-6">
+        <div class="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
+            <div>
+                <h1 class="text-4xl font-black text-[var(--primary)] mb-2" style="font-family: Montserrat;">Squad
+                    Management</h1>
+                <p class="text-slate-500 font-medium">Categorize your athletes into specialized groups based on their
+                    skill and performance.</p>
+            </div>
+            <button id="exportPdfBtn"
+                class="flex items-center gap-3 bg-[var(--primary)] text-white px-8 py-4 rounded-2xl font-black text-sm uppercase tracking-widest shadow-xl hover:bg-[var(--secondary)] transition-all transform hover:scale-[1.02] active:scale-[0.98]">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                        d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                Export Roster PDF
+            </button>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+
+            <!-- UNASSIGNED POOL -->
+            <div class="lg:col-span-1">
+                <div class="flex items-center justify-between mb-4 px-2">
+                    <h2 class="text-xs font-black text-slate-400 uppercase tracking-[0.2em]">Registered Athletes</h2>
+                    <span id="unassignedCount"
+                        class="bg-slate-200 text-slate-600 px-2 py-0.5 rounded text-[10px] font-bold">0</span>
+                </div>
+                <div id="unassignedPool"
+                    class="squad-column p-4 rounded-[2rem] space-y-4 overflow-y-auto max-h-[700px]">
+                    <!-- Athletes will be loaded here -->
+                    <div class="animate-pulse bg-white/50 h-24 rounded-2xl"></div>
+                    <div class="animate-pulse bg-white/50 h-24 rounded-2xl"></div>
+                </div>
+            </div>
+
+            <!-- SQUADS DYNAMIC CONTAINER -->
+            <div class="lg:col-span-3">
+                <div class="flex justify-end mb-4">
+                    <button id="createSquadBtn"
+                        class="flex items-center gap-2 text-sm font-bold text-[var(--primary)] bg-white px-4 py-2 rounded-xl shadow-sm hover:shadow-md transition-all border border-slate-100">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4" />
+                        </svg>
+                        Create New Squad
+                    </button>
+                </div>
+
+                <div id="squadsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Dynamic squads will be injected here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- CREATE SQUAD MODAL -->
+        <div id="createSquadModal"
+            class="fixed inset-0 bg-black/50 backdrop-blur-sm z-[150] hidden flex items-center justify-center">
+            <div class="bg-white p-8 rounded-3xl shadow-2xl w-full max-w-md transform transition-all scale-95 opacity-0"
+                id="modalContent">
+                <h3 class="text-2xl font-black text-[var(--primary)] mb-2">New Squad</h3>
+                <p class="text-slate-500 text-sm mb-6">Give your new training group a name.</p>
+
+                <input type="text" id="newSquadName" placeholder="e.g. Sprinters A-Team"
+                    class="w-full px-4 py-3 rounded-xl border-2 border-slate-100 focus:border-[var(--primary)] focus:outline-none font-bold text-slate-700 mb-6">
+
+                <div class="flex gap-4">
+                    <button id="cancelSquadBtn"
+                        class="flex-1 py-3 rounded-xl font-bold text-slate-500 hover:bg-slate-50 transition-colors">Cancel</button>
+                    <button id="confirmSquadBtn"
+                        class="flex-1 py-3 rounded-xl font-bold bg-[var(--primary)] text-white hover:bg-[var(--secondary)] shadow-lg transition-all">Create
+                        Squad</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- SUCCESS TOAST -->
+    <div id="toast"
+        class="hidden fixed bottom-10 left-1/2 -translate-x-1/2 bg-[var(--primary)] text-white px-8 py-4 rounded-2xl shadow-2xl font-bold translate-y-20 transition-all duration-500 z-[200] flex items-center gap-3 opacity-0">
+        <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+        </svg>
+        <span id="toastMsg">Squad updated successfully</span>
+    </div>
+
+    <script type="module" src="coach-squads.js"></script>
+</body>
+
+</html>

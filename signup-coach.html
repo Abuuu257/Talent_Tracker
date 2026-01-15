@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Coach Sign Up</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Tailwind -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primaryBg: '#B7D3D7',
+                        secondaryBg: '#DCEBEE',
+                        primaryBlue: '#0B2E5F',
+                        accentBlue: '#2E5F9E',
+                        accentBlueHover: '#244F85'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+
+<body class="min-h-screen bg-primaryBg flex items-center justify-center px-4">
+
+    <div class="w-full max-w-md bg-secondaryBg rounded-2xl shadow-xl p-8">
+
+        <h1 class="text-3xl font-extrabold text-primaryBlue text-center mb-2">
+            Coach Registration
+        </h1>
+
+        <p class="text-center text-gray-600 mb-6">
+            Connect with talent and build champions
+        </p>
+
+        <form id="signupForm" class="space-y-4">
+
+            <div>
+                <label class="text-sm font-semibold text-primaryBlue">Username</label>
+                <input id="username" type="text" required class="w-full mt-1 px-4 py-2 rounded-lg border border-gray-300
+                 focus:outline-none focus:ring-2 focus:ring-accentBlue" />
+            </div>
+
+
+
+
+
+            <div>
+                <label class="text-sm font-semibold text-primaryBlue">Email</label>
+                <input id="email" type="email" required class="w-full mt-1 px-4 py-2 rounded-lg border border-gray-300
+                 focus:outline-none focus:ring-2 focus:ring-accentBlue" />
+            </div>
+
+            <div class="space-y-1">
+                <label class="text-sm font-semibold text-primaryBlue">Password</label>
+                <div class="relative">
+                    <input id="password" type="password" required class="w-full mt-1 px-4 py-2 rounded-lg border border-gray-300
+                  focus:outline-none focus:ring-2 focus:ring-accentBlue pr-12" />
+                    <button type="button" id="togglePassword"
+                        class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-accentBlue focus:outline-none group">
+                        <svg class="w-5 h-5 transition-all group-active:scale-95" fill="none" stroke="currentColor"
+                            stroke-width="2.5" viewBox="0 0 24 24">
+                            <path class="eye-open" stroke-linecap="round" stroke-linejoin="round"
+                                d="M2.036 12.322a1.012 1.012 0 0 1 0-.644C3.414 9.006 6.91 5 12 5c5.346 0 8.841 4.006 9.964 6.678a1.012 1.012 0 0 1 0 .644C20.586 14.994 17.09 19 12 19c-5.346 0-8.841-4.006-9.964-6.678Z" />
+                            <path class="eye-open" stroke-linecap="round" stroke-linejoin="round"
+                                d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                            <path class="eye-closed hidden" stroke-linecap="round" stroke-linejoin="round"
+                                d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.892 7.892L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.88 9.88" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- ERROR MESSAGE -->
+            <p id="signupError" class="text-sm text-red-600 hidden"></p>
+
+            <button type="submit" class="w-full bg-accentBlue text-white py-2 rounded-lg
+               hover:bg-accentBlueHover transition font-semibold">
+                Create Coach Account
+            </button>
+        </form>
+
+        <p class="text-sm text-center mt-6 text-gray-600">
+            Already have an account?
+            <a href="index.html" class="font-semibold text-primaryBlue underline">
+                Login
+            </a>
+        </p>
+    </div>
+
+    <script type="module" src="signup-coach.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Athlete Verification - Federation Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        :root {
+            --primary: #012A61;
+            --secondary: #275A91;
+            --highlight: #FDC787;
+            --background: #A5C5CC;
+        }
+
+        body {
+            font-family: "Montserrat", sans-serif;
+            background-color: var(--background);
+        }
+    </style>
+</head>
+
+<body class="min-h-screen pb-20">
+
+    <!-- Navbar -->
+    <nav class="bg-white/90 backdrop-blur shadow-sm border-b border-white/20 px-8 py-4 fixed w-full top-0 z-50">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-4">
+                <a href="federation-home.html"
+                    class="flex items-center gap-2 text-slate-500 hover:text-[var(--primary)] transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7" />
+                    </svg>
+                    <span class="font-bold text-sm uppercase tracking-wide">Back to Directory</span>
+                </a>
+            </div>
+            <div class="flex items-center gap-4">
+                <div class="text-[var(--primary)] font-black text-lg tracking-tight hidden md:block">FEDERATION<span
+                        class="text-slate-400 font-light"> | ADMIN PANEL</span></div>
+
+                <div id="navUserArea" class="relative group">
+                    <button id="navUserBtn"
+                        class="px-5 py-2 rounded-full bg-[var(--secondary)] text-white hover:bg-[var(--primary)] transition-all duration-300 font-semibold shadow-lg hover:shadow-xl flex items-center gap-3 transform hover:-translate-y-0.5">
+                        <div id="navUserPic"
+                            class="w-7 h-7 rounded-full bg-white hidden overflow-hidden border border-white/20 shrink-0">
+                            <img id="navUserImg" src="" alt="" class="w-full h-full object-cover hidden">
+                        </div>
+                        <span id="navBtnText">Admin</span>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7">
+                            </path>
+                        </svg>
+                    </button>
+                    <div id="navUserDropdown"
+                        class="hidden absolute right-0 mt-3 w-56 bg-white shadow-2xl rounded-2xl text-black p-4 border border-gray-100 z-50 animate-fade overflow-hidden">
+                        <div class="mb-4 pb-4 border-b border-gray-100">
+                            <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Signed in as</p>
+                            <p id="navUserEmail" class="text-sm font-semibold text-gray-800 break-words leading-tight">
+                                Admin</p>
+                        </div>
+                        <button id="logoutBtn"
+                            class="w-full bg-red-50 text-red-600 py-3 rounded-xl hover:bg-red-100 transition-colors duration-200 text-sm font-bold flex items-center justify-center gap-2">
+                            Logout
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-5xl mx-auto pt-32 px-6">
+
+        <!-- Header / Status Bar -->
+        <div
+            class="bg-white rounded-3xl p-8 shadow-xl border border-white/40 mb-8 flex flex-col md:flex-row items-center gap-8 relative overflow-hidden">
+            <div
+                class="absolute top-0 right-0 w-32 h-32 bg-[var(--highlight)]/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2">
+            </div>
+
+            <!-- Photo -->
+            <div class="relative shrink-0">
+                <img id="userPic" src="" class="w-32 h-32 rounded-2xl object-cover shadow-lg border-4 border-slate-50">
+                <div id="statusBadge"
+                    class="absolute -bottom-3 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-slate-200 text-slate-600 text-[10px] font-black uppercase tracking-widest shadow-md whitespace-nowrap">
+                    Loading...
+                </div>
+            </div>
+
+            <!-- Basic Info -->
+            <div class="flex-grow text-center md:text-left z-10">
+                <h1 id="userName" class="text-3xl font-black text-slate-800 mb-2">Loading Name...</h1>
+                <div
+                    class="flex flex-wrap gap-4 justify-center md:justify-start text-sm font-semibold text-slate-500 mb-4">
+                    <span class="flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        </svg>
+                        <span id="userEmail">...</span>
+                    </span>
+                    <span class="flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                        </svg>
+                        <span id="userPhone">...</span>
+                    </span>
+                </div>
+                <!-- Action Buttons -->
+                <div class="flex gap-3 justify-center md:justify-start">
+                    <button id="btnApprove" onclick="updateStatus('approved')"
+                        class="bg-green-500 hover:bg-green-600 text-white px-6 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider shadow-lg transition-all flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+                        </svg>
+                        Approve Access
+                    </button>
+                    <button id="btnRevoke" onclick="updateStatus('pending')"
+                        class="bg-white border-2 border-slate-200 text-slate-500 hover:text-red-500 hover:border-red-200 px-6 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider shadow-sm transition-all">
+                        Revoke / Suspend
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Left Column: Details -->
+            <div class="lg:col-span-2 space-y-8">
+
+                <!-- Personal Data -->
+                <div class="bg-white rounded-[2rem] p-8 shadow-lg">
+                    <h3
+                        class="text-sm font-black text-slate-400 uppercase tracking-widest mb-6 border-b border-slate-100 pb-4">
+                        Personal Details</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-8" id="personalGrid">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <!-- Specialized Data (Athletic or Coaching) -->
+                <div class="bg-white rounded-[2rem] p-8 shadow-lg">
+                    <h3 id="specTitle"
+                        class="text-sm font-black text-slate-400 uppercase tracking-widest mb-6 border-b border-slate-100 pb-4">
+                        Profile Data</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-8" id="specGrid">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Right Column: Verification Assets -->
+            <div class="space-y-8">
+                <!-- Documents -->
+                <div class="bg-slate-800 text-white rounded-[2rem] p-8 shadow-2xl relative overflow-hidden">
+                    <div
+                        class="absolute top-0 right-0 w-40 h-40 bg-[var(--secondary)]/30 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2">
+                    </div>
+                    <h3 class="text-sm font-black text-slate-400 uppercase tracking-widest mb-6 relative z-10">
+                        Verification Documents</h3>
+
+                    <div id="docsList" class="space-y-4 relative z-10">
+                        <!-- Populated by JS -->
+                        <p class="text-slate-500 italic text-sm">Checking for documents...</p>
+                    </div>
+                </div>
+
+                <!-- Admin Notes (Mock) -->
+                <div class="bg-white rounded-[2rem] p-8 shadow-lg">
+                    <h3 class="text-sm font-black text-slate-400 uppercase tracking-widest mb-4">Admin Notes</h3>
+                    <textarea id="adminNotesTextarea"
+                        class="w-full bg-slate-50 border-none rounded-xl p-4 text-sm font-medium text-slate-600 focus:ring-2 focus:ring-blue-100 outline-none h-32"
+                        placeholder="Internal notes about this verification..."></textarea>
+                    <button id="saveNoteBtn"
+                        class="w-full mt-4 bg-slate-100 text-slate-500 hover:bg-[var(--primary)] hover:text-white py-3 rounded-xl text-xs font-bold uppercase transition-all">Save
+                        Note</button>
+                    <p class="text-[9px] text-center text-slate-300 mt-2">Notes are strictly internal.</p>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script type="module" src="admin-view.js"></script>
+</body>
+
+</html>

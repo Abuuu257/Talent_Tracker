@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Discover Athletes - Coach Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --primary: #012A61;
+            --secondary: #275A91;
+            --highlight: #FDC787;
+            --background: #A5C5CC;
+            --accent: #977086;
+        }
+
+        body {
+            font-family: "Poppins", sans-serif;
+            background-color: var(--background);
+        }
+
+        .filter-chip {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .filter-chip.active {
+            background-color: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .athlete-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .athlete-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-slide-up {
+            animation: slideUp 0.3s ease-out;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen">
+
+    <nav
+        class="fixed top-0 left-0 w-full bg-[var(--background)]/80 backdrop-blur-md shadow-sm z-[100] border-b border-white/10">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="text-2xl font-extrabold text-[var(--primary)] tracking-tight">Talent Tracker</div>
+
+            <!-- Desktop Menu -->
+            <div class="hidden md:flex space-x-8 font-semibold text-black items-center">
+                <a href="coach-home.html" class="hover:text-[var(--primary)] transition-colors duration-200">Home</a>
+                <a href="coach-dashboard.html"
+                    class="hover:text-[var(--primary)] transition-colors duration-200">Dashboard</a>
+                <a href="coach-athletes.html"
+                    class="hover:text-[var(--primary)] transition-colors duration-200 text-[var(--primary)]">Discover
+                    Athletes</a>
+                <a href="coach-squads.html" class="hover:text-[var(--primary)] transition-colors duration-200">Squad
+                    Management</a>
+                <a href="events.html" class="hover:text-[var(--primary)] transition-colors duration-200">Events</a>
+
+                <div id="navUserArea" class="relative group">
+                    <button id="navUserBtn"
+                        class="px-5 py-2 rounded-full bg-[var(--secondary)] text-white hover:bg-[var(--primary)] transition-all duration-300 font-semibold shadow-lg hover:shadow-xl flex items-center gap-3 transform hover:-translate-y-0.5">
+                        <div id="navUserPic"
+                            class="w-7 h-7 rounded-full bg-white hidden overflow-hidden border border-white/20 shrink-0">
+                            <img id="navUserImg" src="" alt="" class="w-full h-full object-cover hidden">
+                        </div>
+                        <span id="navBtnText">Loading...</span>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7">
+                            </path>
+                        </svg>
+                    </button>
+
+                    <div id="navUserDropdown"
+                        class="hidden absolute right-0 mt-3 w-56 bg-white shadow-2xl rounded-2xl text-black p-4 border border-gray-100 z-50 animate-fade overflow-hidden">
+                        <div class="mb-4 pb-4 border-b border-gray-100">
+                            <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Signed in as</p>
+                            <p id="navUserEmail" class="text-sm font-semibold text-gray-800 break-words leading-tight">
+                            </p>
+                        </div>
+                        <button id="logoutBtn"
+                            class="w-full bg-red-50 text-red-600 py-3 rounded-xl hover:bg-red-100 transition-colors duration-200 text-sm font-bold flex items-center justify-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
+                                </path>
+                            </svg>
+                            Logout
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto pt-32 pb-20 px-6">
+        <header class="mb-12">
+            <h1 class="text-4xl font-extrabold text-[var(--primary)] mb-4">Discover Rising Talent</h1>
+            <p class="text-slate-700 font-medium">Browse and filter athletes to build your champions.</p>
+        </header>
+
+        <!-- FILTERS SECTION -->
+        <section class="bg-white rounded-3xl p-6 md:p-8 shadow-xl mb-12 border border-blue-50">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <!-- Search -->
+                <div class="md:col-span-2">
+                    <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Search
+                        Name</label>
+                    <div class="relative">
+                        <input type="text" id="athleteSearch" placeholder="Search by name..."
+                            class="w-full px-5 py-3 rounded-xl bg-slate-50 border-2 border-slate-100 focus:border-[var(--primary)] focus:outline-none transition-all pl-12">
+                        <svg class="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" fill="none"
+                            stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- Filter Race Event -->
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Race
+                        Event</label>
+                    <select id="filterSport"
+                        class="w-full px-5 py-3 rounded-xl bg-slate-50 border-2 border-slate-100 focus:border-[var(--primary)] focus:outline-none transition-all">
+                        <option value="all">All Events</option>
+                        <option value="100m">100m</option>
+                        <option value="200m">200m</option>
+                        <option value="400m">400m</option>
+                        <option value="800m">800m</option>
+                        <option value="1200m">1200m</option>
+                    </select>
+                </div>
+
+                <!-- Filter Category -->
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Category</label>
+                    <select id="filterCategory"
+                        class="w-full px-5 py-3 rounded-xl bg-slate-50 border-2 border-slate-100 focus:border-[var(--primary)] focus:outline-none transition-all">
+                        <option value="all">All Categories</option>
+                        <option value="U12">U12</option>
+                        <option value="U14">U14</option>
+                        <option value="U16">U16</option>
+                        <option value="U18">U18</option>
+                        <option value="U20">U20</option>
+                        <option value="Open">Open</option>
+                    </select>
+                </div>
+
+                <!-- Favorites Toggle -->
+                <div class="md:col-span-4 flex items-center justify-end gap-4">
+                    <div id="favoritesCount"
+                        class="hidden px-4 py-2 bg-red-50 text-red-600 rounded-full text-sm font-bold">
+                        <span id="favCountNumber">0</span> Favorites
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer group">
+                        <input type="checkbox" id="filterFavorites" class="sr-only peer">
+                        <div
+                            class="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-red-100 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-500 group-hover:bg-slate-300">
+                        </div>
+                        <span
+                            class="ml-3 text-sm font-bold text-slate-600 group-hover:text-[var(--primary)] transition-colors">Show
+                            Watchlist Only ❤️</span>
+                    </label>
+                </div>
+        </section>
+
+        <!-- ATHLETES GRID -->
+        <div id="athletesGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+            <!-- Loading Skeletons -->
+            <div class="animate-pulse bg-white rounded-3xl h-80"></div>
+            <div class="animate-pulse bg-white rounded-3xl h-80"></div>
+            <div class="animate-pulse bg-white rounded-3xl h-80"></div>
+            <div class="animate-pulse bg-white rounded-3xl h-80"></div>
+        </div>
+
+        <!-- No Results -->
+        <div id="noResults" class="hidden text-center py-20">
+            <div class="bg-white/50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg class="w-10 h-10 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9.172 9.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+            </div>
+            <h3 class="text-xl font-bold text-slate-800">No athletes found matching your filters</h3>
+            <p class="text-slate-600">Try adjusting your search or filters.</p>
+        </div>
+    </main>
+
+    <script type="module" src="coach-athletes.js"></script>
+</body>
+
+</html>

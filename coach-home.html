@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome - Coach Portal</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="styles.css">
+
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <style>
+        /* ========================================
+           2. CSS VARIABLES (THEME COLORS)
+           ========================================
+           These variables keep color consistency across the site.
+           If you change a hex code here, it updates everywhere.
+        */
+        :root {
+            --primary: #012A61;
+            /* Deep Navy Blue */
+            --secondary: #275A91;
+            /* Medium Blue */
+            --highlight: #FDC787;
+            /* Gold/Yellow Highlight */
+            --background: #A5C5CC;
+            /* Light Blue-Grey Background */
+            --accent: #977086;
+            /* Muted Purple Accent */
+        }
+
+        /* Apply the font family and background color to the whole page */
+        body {
+            font-family: "Montserrat", sans-serif;
+            background-color: var(--background);
+        }
+    </style>
+</head>
+
+<body class="min-h-screen overflow-x-hidden">
+
+    <nav
+        class="fixed top-0 left-0 w-full bg-[var(--background)]/80 backdrop-blur-md shadow-sm z-[100] border-b border-white/10">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+
+            <div class="text-2xl font-extrabold text-[var(--primary)] tracking-tight">Talent Tracker</div>
+
+            <div class="hidden md:flex space-x-8 font-semibold text-black items-center">
+                <a href="coach-home.html"
+                    class="hover:text-[var(--primary)] transition-colors duration-200 text-[var(--primary)]">Home</a>
+                <a href="coach-dashboard.html"
+                    class="hover:text-[var(--primary)] transition-colors duration-200">Dashboard</a>
+                <a href="coach-athletes.html"
+                    class="hover:text-[var(--primary)] transition-colors duration-200">Discover Athletes</a>
+                <a href="coach-squads.html" class="hover:text-[var(--primary)] transition-colors duration-200">Squad
+                    Management</a>
+                <a href="events.html" class="hover:text-[var(--primary)] transition-colors duration-200">Events</a>
+
+                <div id="navUserArea" class="relative group">
+                    <input type="file" id="navProfileInput" class="hidden"
+                        accept=".jpg, .jpeg, .png, .pdf, application/pdf, image/png, image/jpeg, image/jpg">
+                    <button id="navUserBtn"
+                        class="px-5 py-2 rounded-full bg-[var(--secondary)] text-white hover:bg-[var(--primary)] transition-all duration-300 font-semibold shadow-lg hover:shadow-xl flex items-center gap-3 transform hover:-translate-y-0.5 relative overflow-hidden">
+                        <div id="navUserPic"
+                            class="w-7 h-7 rounded-full bg-white hidden overflow-hidden border border-white/20 shrink-0">
+                            <img id="navUserImg" src="" alt="" class="w-full h-full object-cover hidden">
+                        </div>
+                        <span id="navBtnText">Loading...</span>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="19 9l-7 7-7-7">
+                            </path>
+                        </svg>
+                    </button>
+
+                    <div id="navUserDropdown"
+                        class="hidden absolute right-0 mt-3 w-56 bg-white shadow-2xl rounded-2xl text-black p-4 border border-gray-100 z-50 animate-fade overflow-hidden">
+                        <div class="mb-4 pb-4 border-b border-gray-100">
+                            <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Signed in as</p>
+                            <p id="navUserEmail" class="text-sm font-semibold text-gray-800 break-words leading-tight">
+                            </p>
+                        </div>
+                        <button id="logoutBtn"
+                            class="w-full bg-red-50 text-red-600 py-3 rounded-xl hover:bg-red-100 transition-colors duration-200 text-sm font-bold flex items-center justify-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
+                                </path>
+                            </svg>
+                            Logout
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mobile Hamburger Button -->
+            <button id="mobileMenuButton"
+                class="md:hidden text-[var(--primary)] focus:outline-none p-2 rounded-lg hover:bg-white/20 transition-colors"
+                aria-label="Toggle Menu">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6h16M4 12h16m-7 6h7">
+                    </path>
+                </svg>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Mobile Menu Sidebar Overlay (Backdrop) -->
+    <div id="mobileMenuBackdrop"
+        class="fixed inset-0 bg-black/50 z-[101] hidden backdrop-blur-sm transition-opacity duration-300 opacity-0">
+    </div>
+
+    <!-- Mobile Menu Sidebar -->
+    <div id="mobileMenu" class="fixed inset-y-0 right-0 w-[80%] max-w-sm bg-white z-[102] flex flex-col shadow-2xl 
+        translate-x-full transition-transform duration-300 ease-in-out md:hidden overflow-y-auto">
+
+        <!-- Sidebar Header -->
+        <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+            <div class="text-xl font-black text-[var(--primary)] tracking-tight">Menu</div>
+            <button id="mobileBackBtn"
+                class="text-gray-400 hover:text-[var(--primary)] p-2 transition-colors focus:outline-none">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12">
+                    </path>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Sidebar Content -->
+        <div class="flex flex-col p-8 space-y-6 flex-grow">
+            <div class="space-y-4">
+                <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Navigation</p>
+                <a href="coach-home.html"
+                    class="flex items-center gap-4 py-3 text-lg font-bold text-[var(--primary)] transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6">
+                        </path>
+                    </svg>
+                    Home
+                </a>
+                <a href="coach-dashboard.html"
+                    class="flex items-center gap-4 py-3 text-lg font-bold text-gray-800 hover:text-[var(--primary)] transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z">
+                        </path>
+                    </svg>
+                    Dashboard
+                </a>
+                <a href="coach-athletes.html"
+                    class="flex items-center gap-4 py-3 text-lg font-bold text-gray-800 hover:text-[var(--primary)] transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                    Discover Athletes
+                </a>
+                <a href="coach-squads.html"
+                    class="flex items-center gap-4 py-3 text-lg font-bold text-gray-800 hover:text-[var(--primary)] transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z">
+                        </path>
+                    </svg>
+                    Squad Management
+                </a>
+                <a href="#"
+                    class="flex items-center gap-4 py-3 text-lg font-bold text-gray-800 hover:text-[var(--primary)] transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z">
+                        </path>
+                    </svg>
+                    Events
+                </a>
+            </div>
+
+            <div class="pt-6 border-t border-gray-100">
+                <div class="mb-6">
+                    <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Signed in as</p>
+                    <div class="flex items-center gap-3">
+                        <div id="mobileUserPic"
+                            class="w-10 h-10 rounded-full bg-white hidden overflow-hidden border border-gray-100 shrink-0">
+                            <img id="mobileUserImg" src="" alt="" class="w-full h-full object-cover hidden">
+                        </div>
+                        <p id="mobileUserName"
+                            class="text-xl font-black text-[var(--primary)] break-words leading-tight"></p>
+                    </div>
+                </div>
+                <button id="mobileLogoutBtn"
+                    class="w-full py-4 rounded-xl bg-red-50 text-red-600 hover:bg-red-100 transition-all font-bold text-sm border border-red-100 uppercase tracking-wide flex items-center justify-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
+                        </path>
+                    </svg>
+                    Logout
+                </button>
+            </div>
+        </div>
+
+        <!-- Sidebar Footer -->
+        <div class="p-8 text-center text-xs text-gray-400 font-medium bg-gray-50 border-t border-gray-100">
+            Talent Tracker © 2025
+        </div>
+    </div>
+
+    <!-- ONBOARDING STATE (Shown when profile is NOT complete) -->
+    <section id="onboardingState" class="hidden pt-32 pb-16 max-w-7xl mx-auto px-6">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+            <div class="space-y-8">
+                <div class="inline-block px-4 py-2 bg-amber-50 rounded-2xl border border-amber-100">
+                    <p class="text-[10px] font-black text-amber-600 uppercase tracking-widest flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+                        Action Required: Profile Incomplete
+                    </p>
+                </div>
+                <h1 class="text-5xl md:text-6xl font-black text-[var(--primary)] leading-tight"
+                    style="font-family: Montserrat;">
+                    Launch Your <span class="text-white drop-shadow-sm">Coaching</span> Career.
+                </h1>
+                <p class="text-xl text-slate-600 font-medium leading-relaxed">
+                    Welcome to Talent Tracker. To start discovering athletes, building squads, and managing your
+                    recruitment pipeline, you must first complete your professional coaching profile.
+                </p>
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <a href="create-coach-profile.html"
+                        class="bg-[var(--primary)] text-white px-10 py-5 rounded-[2rem] shadow-2xl hover:scale-105 transition-all font-bold text-lg flex items-center justify-center gap-3">
+                        Complete Profile Now
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                        </svg>
+                    </a>
+                </div>
+            </div>
+            <div class="relative">
+                <div
+                    class="bg-white/50 backdrop-blur-xl p-10 rounded-[3rem] border border-white shadow-2xl relative z-10">
+                    <h3 class="font-black text-[var(--primary)] text-xl mb-6">Unlocking These Features:</h3>
+                    <ul class="space-y-6">
+                        <li class="flex items-start gap-4">
+                            <div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center shrink-0">
+                                <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                        d="M5 13l4 4L19 7" />
+                                </svg>
+                            </div>
+                            <div>
+                                <p class="font-bold text-slate-800">Advanced Talent Discovery</p>
+                                <p class="text-xs text-slate-500 font-medium">Filter athletes by race event, category,
+                                    and city.</p>
+                            </div>
+                        </li>
+                        <li class="flex items-start gap-4">
+                            <div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center shrink-0">
+                                <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                        d="M5 13l4 4L19 7" />
+                                </svg>
+                            </div>
+                            <div>
+                                <p class="font-bold text-slate-800">Custom Squad Builder</p>
+                                <p class="text-xs text-slate-500 font-medium">Organize your recruited talent into
+                                    specialized training groups.</p>
+                            </div>
+                        </li>
+                        <li class="flex items-start gap-4">
+                            <div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center shrink-0">
+                                <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                        d="M5 13l4 4L19 7" />
+                                </svg>
+                            </div>
+                            <div>
+                                <p class="font-bold text-slate-800">Analytics Dashboard</p>
+                                <p class="text-xs text-slate-500 font-medium">Track performance trends and PB
+                                    improvements over time.</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+                <div class="absolute -top-10 -right-10 w-40 h-40 bg-[var(--highlight)]/30 blur-3xl rounded-full"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- DASHBOARD STATE (Shown when profile IS complete) -->
+    <!-- VERIFICATION BANNER (Shown if profile complete but not verified) -->
+    <div id="verificationBanner" class="hidden mb-12 animate-in fade-in slide-in-from-top-4 duration-700">
+        <div
+            class="bg-amber-50 border border-amber-200 rounded-[2rem] p-6 flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm">
+            <div class="flex items-center gap-5">
+                <div class="w-14 h-14 rounded-2xl bg-amber-100 flex items-center justify-center shrink-0">
+                    <svg class="w-7 h-7 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                </div>
+                <div>
+                    <h4 class="font-black text-amber-900 text-lg">Verification Pending</h4>
+                    <p class="text-amber-700 text-sm font-medium">The Federation is currently reviewing your profile.
+                        Some features may be restricted until approved.</p>
+                </div>
+            </div>
+            <div
+                class="px-6 py-2 bg-white border border-amber-200 rounded-xl text-xs font-black text-amber-600 uppercase tracking-widest">
+                In Review
+            </div>
+        </div>
+    </div>
+
+    <div id="dashboardState" class="hidden">
+        <section id="heroSection" class="pt-32 pb-16 max-w-7xl mx-auto px-6">
+            <div class="grid grid-cols-1 lg:grid-cols-10 gap-12 items-center">
+
+                <div
+                    class="lg:col-span-5 flex flex-col justify-center items-center text-center lg:text-left lg:items-start">
+
+                    <h1
+                        class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-[var(--primary)] leading-tight mb-8">
+                        Welcome back, Coach <span id="heroUserDisplay" class="text-white drop-shadow-sm"></span>
+                    </h1>
+
+                    <p class="text-lg sm:text-xl text-black/80 font-medium mb-12 leading-relaxed max-w-xl">
+                        View your curated watchlist, manage your training squads, and discover new elite athletes.
+                    </p>
+
+                    <div class="flex flex-col sm:flex-row gap-4">
+                        <a href="coach-dashboard.html"
+                            class="bg-[var(--secondary)] text-white px-10 py-4 rounded-full shadow-xl hover:bg-[var(--primary)] transition-all duration-300 font-bold text-lg transform hover:scale-105 active:scale-95 text-center flex items-center justify-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z">
+                                </path>
+                            </svg>
+                            View Dashboard
+                        </a>
+                        <a href="coach-squads.html"
+                            class="bg-white text-[var(--primary)] border-2 border-[var(--primary)] px-10 py-4 rounded-full shadow-lg hover:bg-slate-50 transition-all duration-300 font-bold text-lg text-center transform hover:scale-105 active:scale-95">
+                            Manage Squads
+                        </a>
+                        <a href="coach-athletes.html"
+                            class="bg-white text-[var(--primary)] border-2 border-[var(--primary)] px-10 py-4 rounded-full shadow-lg hover:bg-slate-50 transition-all duration-300 font-bold text-lg text-center transform hover:scale-105 active:scale-95">
+                            Discover Talent
+                        </a>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-12 lg:col-span-5 flex justify-center lg:justify-end">
+                    <!-- Quick Stats Dashboard -->
+                    <div class="grid grid-cols-2 gap-6 w-full max-w-md">
+                        <div
+                            class="bg-white p-8 rounded-[2.5rem] shadow-xl border border-white flex flex-col items-center">
+                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">My Squads
+                            </p>
+                            <p id="statSquads" class="text-4xl font-black text-[var(--primary)]">03</p>
+                        </div>
+                        <div
+                            class="bg-white p-8 rounded-[2.5rem] shadow-xl border border-white flex flex-col items-center">
+                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Tracked
+                                Athletes</p>
+                            <p id="statAthletes" class="text-4xl font-black text-[var(--secondary)]">00</p>
+                        </div>
+                        <div
+                            class="col-span-2 bg-[var(--primary)] p-8 rounded-[2.5rem] shadow-2xl text-white relative overflow-hidden">
+                            <div class="relative z-10">
+                                <p class="text-[10px] font-black text-blue-200 uppercase tracking-widest mb-3">
+                                    Recruitment Status</p>
+                                <div id="verificationBadge"
+                                    class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-500 text-[10px] font-black uppercase tracking-widest mb-2 shadow-lg">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
+                                    <span id="verificationStatusText">Pending Verification</span>
+                                </div>
+                                <p id="recruitmentLevelText" class="text-xl font-bold mt-2">Professional Coach / Scout
+                                </p>
+                                <a href="create-coach-profile.html"
+                                    class="mt-4 inline-block text-[10px] font-black uppercase text-[var(--highlight)] underline">Update
+                                    Bio</a>
+                            </div>
+                            <div class="absolute -right-10 -bottom-10 w-32 h-32 bg-white/10 rounded-full"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Watchlist Section (Moved inside dashboard state) -->
+        <section class="max-w-7xl mx-auto px-6 pb-20">
+            <div class="bg-white/40 backdrop-blur-xl rounded-[3rem] p-8 md:p-12 border border-white/20 shadow-2xl">
+                <div
+                    class="flex flex-col md:flex-row justify-between items-center mb-10 gap-6 text-center md:text-left">
+                    <div>
+                        <h2 class="text-3xl font-black text-[var(--primary)] mb-2">Tracked Talent ❤️</h2>
+                        <p class="text-slate-600 font-semibold tracking-wide">Quick access to athletes you're scouting.
+                        </p>
+                    </div>
+                    <a href="coach-athletes.html"
+                        class="flex items-center gap-3 text-sm font-black text-[var(--secondary)] bg-white px-6 py-3 rounded-2xl hover:bg-[var(--primary)] hover:text-white transition-all shadow-sm">
+                        View Full Database
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                        </svg>
+                    </a>
+                </div>
+
+                <div id="watchlistSummary" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <!-- Loading State -->
+                    <div class="animate-pulse bg-white/20 h-40 rounded-3xl"></div>
+                    <div class="animate-pulse bg-white/20 h-40 rounded-3xl"></div>
+                    <div class="animate-pulse bg-white/20 h-40 rounded-3xl"></div>
+                    <div class="animate-pulse bg-white/20 h-40 rounded-3xl"></div>
+                </div>
+
+                <!-- Empty State -->
+                <div id="emptyWatchlist" class="hidden text-center py-12">
+                    <div
+                        class="bg-white/30 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 border border-white/20 shadow-inner">
+                        <svg class="w-10 h-10 text-slate-400 opacity-50" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                        </svg>
+                    </div>
+                    <p class="text-lg font-bold text-slate-500">Your watchlist is empty.</p>
+                    <p class="text-sm text-slate-400 mb-6">Start building your team by exploring athletes.</p>
+                    <a href="coach-athletes.html"
+                        class="inline-block bg-[var(--primary)] text-white px-8 py-3 rounded-xl font-bold text-sm shadow-xl hover:scale-105 transition-all">Explore
+                        Athletes</a>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <footer class="bg-[var(--background)] text-black border-t border-gray-400 mt-12">
+        <div class="max-w-7xl mx-auto py-8 text-center text-sm font-medium">
+            © 2025 Talent Tracker. All Rights Reserved.
+        </div>
+    </footer>
+
+    <script type="module" src="coach-home.js"></script>
+
+</body>
+
+</html>

@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Events - Talent Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --primary: #012A61;
+            --secondary: #275A91;
+            --highlight: #FDC787;
+            --background: #A5C5CC;
+        }
+
+        body {
+            font-family: "Montserrat", sans-serif;
+            background-color: var(--background);
+        }
+    </style>
+</head>
+
+<body class="min-h-screen">
+    <!-- Navigation -->
+    <nav
+        class="fixed top-0 left-0 w-full bg-[var(--background)]/80 backdrop-blur-md shadow-sm z-[100] border-b border-white/10">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="text-2xl font-extrabold text-[var(--primary)] tracking-tight">Talent Tracker</div>
+
+            <div class="hidden md:flex space-x-8 font-semibold text-black items-center">
+                <a href="federation-home.html"
+                    class="hover:text-[var(--primary)] transition-colors duration-200">Home</a>
+                <a href="events.html"
+                    class="hover:text-[var(--primary)] transition-colors duration-200 text-[var(--primary)]">Events</a>
+
+                <div id="navUserArea" class="relative group">
+                    <button id="navUserBtn"
+                        class="px-5 py-2 rounded-full bg-[var(--secondary)] text-white hover:bg-[var(--primary)] transition-all duration-300 font-semibold shadow-lg hover:shadow-xl flex items-center gap-3 transform hover:-translate-y-0.5">
+                        <div id="navUserPic"
+                            class="w-7 h-7 rounded-full bg-white hidden overflow-hidden border border-white/20 shrink-0">
+                            <img id="navUserImg" src="" alt="" class="w-full h-full object-cover hidden">
+                        </div>
+                        <span id="navBtnText">Loading...</span>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7">
+                            </path>
+                        </svg>
+                    </button>
+
+                    <div id="navUserDropdown"
+                        class="hidden absolute right-0 mt-3 w-56 bg-white shadow-2xl rounded-2xl text-black p-4 border border-gray-100 z-50 animate-fade overflow-hidden">
+                        <div class="mb-4 pb-4 border-b border-gray-100">
+                            <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Signed in as</p>
+                            <p id="navUserEmail" class="text-sm font-semibold text-gray-800 break-words leading-tight">
+                            </p>
+                        </div>
+                        <button id="logoutBtn"
+                            class="w-full bg-red-50 text-red-600 py-3 rounded-xl hover:bg-red-100 transition-colors duration-200 text-sm font-bold flex items-center justify-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
+                                </path>
+                            </svg>
+                            Logout
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mobile Hamburger Button -->
+            <button id="mobileMenuButton"
+                class="md:hidden text-[var(--primary)] focus:outline-none p-2 rounded-lg hover:bg-white/20 transition-colors"
+                aria-label="Toggle Menu">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6h16M4 12h16m-7 6h7">
+                    </path>
+                </svg>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Mobile Menu Sidebar Overlay (Backdrop) -->
+    <div id="mobileMenuBackdrop"
+        class="fixed inset-0 bg-black/50 z-[101] hidden backdrop-blur-sm transition-opacity duration-300 opacity-0">
+    </div>
+
+    <!-- Mobile Menu Sidebar -->
+    <div id="mobileMenu" class="fixed inset-y-0 right-0 w-[80%] max-w-sm bg-white z-[102] flex flex-col shadow-2xl 
+        translate-x-full transition-transform duration-300 ease-in-out md:hidden overflow-y-auto">
+
+        <!-- Sidebar Header -->
+        <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+            <div class="text-xl font-black text-[var(--primary)] tracking-tight">Menu</div>
+            <button id="mobileBackBtn"
+                class="text-gray-400 hover:text-[var(--primary)] p-2 transition-colors focus:outline-none">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12">
+                    </path>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Sidebar Content -->
+        <div class="flex flex-col p-8 space-y-6 flex-grow">
+            <div class="space-y-4">
+                <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Navigation</p>
+                <a href="federation-home.html"
+                    class="flex items-center gap-4 py-3 text-lg font-bold text-slate-600 hover:text-[var(--primary)] transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6">
+                        </path>
+                    </svg>
+                    Home
+                </a>
+                <a href="events.html"
+                    class="flex items-center gap-4 py-3 text-lg font-bold text-[var(--primary)] transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z">
+                        </path>
+                    </svg>
+                    Events
+                </a>
+            </div>
+
+            <div class="pt-6 border-t border-gray-100">
+                <div class="mb-6">
+                    <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Signed in as</p>
+                    <div class="flex items-center gap-3">
+                        <div id="mobileUserPic"
+                            class="w-10 h-10 rounded-full bg-white hidden overflow-hidden border border-gray-100 shrink-0">
+                            <img id="mobileUserImg" src="" alt="" class="w-full h-full object-cover hidden">
+                        </div>
+                        <p id="mobileUserName"
+                            class="text-xl font-black text-[var(--primary)] break-words leading-tight"></p>
+                    </div>
+                </div>
+                <button id="mobileLogoutBtn"
+                    class="w-full py-4 rounded-xl bg-red-50 text-red-600 hover:bg-red-100 transition-all font-bold text-sm border border-red-100 uppercase tracking-wide flex items-center justify-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
+                        </path>
+                    </svg>
+                    Logout
+                </button>
+            </div>
+        </div>
+
+        <!-- Sidebar Footer -->
+        <div class="p-8 text-center text-xs text-gray-400 font-medium bg-gray-50 border-t border-gray-100">
+            Talent Tracker © 2025
+        </div>
+    </div>
+
+    <main class="max-w-7xl mx-auto pt-28 pb-20 px-6">
+        <!-- Page Header -->
+        <div class="mb-12">
+            <h1 class="text-4xl font-black text-[var(--primary)] mb-2">Events</h1>
+            <p id="eventsSubtitle" class="text-slate-600 font-medium">Discover and participate in upcoming athletic
+                events</p>
+        </div>
+
+        <!-- Admin: Create Event Button -->
+        <div id="adminControls" class="hidden mb-8">
+            <button id="createEventBtn"
+                class="bg-[var(--primary)] text-white px-8 py-4 rounded-2xl font-bold shadow-xl hover:bg-[var(--secondary)] transition-all flex items-center gap-3">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
+                Create New Event
+            </button>
+        </div>
+
+        <!-- Events Grid -->
+        <div id="eventsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <!-- Loading State -->
+            <div class="col-span-full flex justify-center py-20">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--primary)]"></div>
+            </div>
+        </div>
+
+        <!-- Empty State -->
+        <div id="emptyState" class="hidden col-span-full text-center py-20">
+            <div class="text-6xl mb-4">📅</div>
+            <h3 class="text-2xl font-bold text-slate-700 mb-2">No Events Yet</h3>
+            <p class="text-slate-500">Check back soon for upcoming events!</p>
+        </div>
+    </main>
+
+    <!-- Create/Edit Event Modal -->
+    <div id="eventModal"
+        class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[250] hidden flex items-start justify-center overflow-y-auto pt-10 pb-10">
+        <div class="bg-white rounded-[2rem] shadow-2xl w-full max-w-4xl overflow-hidden transform transition-all scale-95 opacity-0 relative"
+            id="eventModalContent">
+
+            <!-- Modal Header -->
+            <div class="bg-[var(--primary)] px-8 py-6 text-white flex justify-between items-center">
+                <div>
+                    <h3 class="text-2xl font-black" id="modalTitle">Create New Event</h3>
+                    <p class="text-blue-200 text-sm font-medium">Fill in the details to announce a new athletic event
+                    </p>
+                </div>
+                <button type="button" onclick="closeEventModal()"
+                    class="bg-white/10 hover:bg-white/20 p-2 rounded-full transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            <form id="eventForm" class="p-8">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+
+                    <!-- Section: Basic Information -->
+                    <div class="md:col-span-2">
+                        <h4 class="text-sm font-black text-slate-400 uppercase tracking-widest mb-4 border-b pb-2">Basic
+                            Information</h4>
+                    </div>
+
+                    <div class="md:col-span-2">
+                        <label class="block text-xs font-black text-slate-500 uppercase mb-2 tracking-wide">Event Title
+                            *</label>
+                        <input type="text" id="eventTitle" required
+                            class="w-full px-5 py-3 rounded-2xl border-2 border-slate-100 bg-slate-50 focus:bg-white focus:border-[var(--primary)] focus:outline-none transition-all"
+                            placeholder="e.g. National Youth Athletics Championship 2025">
+                    </div>
+
+                    <div class="md:col-span-2">
+                        <label class="block text-xs font-black text-slate-500 uppercase mb-2 tracking-wide">Description
+                            *</label>
+                        <textarea id="eventDescription" required rows="3"
+                            class="w-full px-5 py-3 rounded-2xl border-2 border-slate-100 bg-slate-50 focus:bg-white focus:border-[var(--primary)] focus:outline-none transition-all"
+                            placeholder="Detailed overview of the event..."></textarea>
+                    </div>
+
+                    <!-- Section: Logistics -->
+                    <div class="md:col-span-2">
+                        <h4 class="text-sm font-black text-slate-400 uppercase tracking-widest mt-4 mb-4 border-b pb-2">
+                            Date & Location</h4>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-black text-slate-500 uppercase mb-2 tracking-wide">Event Date
+                            *</label>
+                        <input type="date" id="eventDate" required
+                            class="w-full px-5 py-3 rounded-2xl border-2 border-slate-100 bg-slate-50 focus:bg-white focus:border-[var(--primary)] focus:outline-none transition-all">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-black text-slate-500 uppercase mb-2 tracking-wide">Event
+                            Time</label>
+                        <input type="time" id="eventTime"
+                            class="w-full px-5 py-3 rounded-2xl border-2 border-slate-100 bg-slate-50 focus:bg-white focus:border-[var(--primary)] focus:outline-none transition-all">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-black text-slate-500 uppercase mb-2 tracking-wide">Venue
+                            *</label>
+                        <input type="text" id="eventVenue" required
+                            class="w-full px-5 py-3 rounded-2xl border-2 border-slate-100 bg-slate-50 focus:bg-white focus:border-[var(--primary)] focus:outline-none transition-all"
+                            placeholder="e.g. National Stadium">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-black text-slate-500 uppercase mb-2 tracking-wide">City
+                            *</label>
+                        <input type="text" id="eventCity" required
+                            class="w-full px-5 py-3 rounded-2xl border-2 border-slate-100 bg-slate-50 focus:bg-white focus:border-[var(--primary)] focus:outline-none transition-all"
+                            placeholder="e.g. Colombo">
+                    </div>
+
+                    <!-- Section: Participation Details -->
+                    <div class="md:col-span-2">
+                        <h4 class="text-sm font-black text-slate-400 uppercase tracking-widest mt-4 mb-4 border-b pb-2">
+                            Participation & Requirements</h4>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-black text-slate-500 uppercase mb-2 tracking-wide">Category
+                            *</label>
+                        <select id="eventCategory" required
+                            class="w-full px-5 py-3 rounded-2xl border-2 border-slate-100 bg-slate-50 focus:bg-white focus:border-[var(--primary)] focus:outline-none transition-all">
+                            <option value="">Select Category</option>
+                            <option value="U12">Under 12</option>
+                            <option value="U14">Under 14</option>
+                            <option value="U16">Under 16</option>
+                            <option value="U18">Under 18</option>
+                            <option value="U20">Under 20</option>
+                            <option value="Open">Open</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-black text-slate-500 uppercase mb-2 tracking-wide">Event
+                            Status</label>
+                        <select id="eventStatus"
+                            class="w-full px-5 py-3 rounded-2xl border-2 border-slate-100 bg-slate-50 focus:bg-white focus:border-[var(--primary)] focus:outline-none transition-all">
+                            <option value="upcoming">Upcoming</option>
+                            <option value="ongoing">Ongoing</option>
+                            <option value="completed">Completed</option>
+                            <option value="cancelled">Cancelled</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-black text-slate-500 uppercase mb-2 tracking-wide">Registration
+                            Deadline</label>
+                        <input type="date" id="eventDeadline"
+                            class="w-full px-5 py-3 rounded-2xl border-2 border-slate-100 bg-slate-50 focus:bg-white focus:border-[var(--primary)] focus:outline-none transition-all">
+                    </div>
+
+                    <div class="md:col-span-2">
+                        <label class="block text-xs font-black text-slate-500 uppercase mb-2 tracking-wide">Eligibility
+                            Criteria</label>
+                        <textarea id="eventEligibility" rows="2"
+                            class="w-full px-5 py-3 rounded-2xl border-2 border-slate-100 bg-slate-50 focus:bg-white focus:border-[var(--primary)] focus:outline-none transition-all"
+                            placeholder="e.g. Must be a registered member of a sports club..."></textarea>
+                    </div>
+
+                    <div class="md:col-span-2">
+                        <label class="block text-xs font-black text-slate-500 uppercase mb-2 tracking-wide">Rules &
+                            Regulations</label>
+                        <textarea id="eventRules" rows="2"
+                            class="w-full px-5 py-3 rounded-2xl border-2 border-slate-100 bg-slate-50 focus:bg-white focus:border-[var(--primary)] focus:outline-none transition-all"
+                            placeholder="Point-wise rules and regulations..."></textarea>
+                    </div>
+
+                    <div class="md:col-span-2">
+                        <label
+                            class="block text-xs font-black text-slate-500 uppercase mb-2 tracking-wide">Requirements</label>
+                        <textarea id="eventRequirements" rows="2"
+                            class="w-full px-5 py-3 rounded-2xl border-2 border-slate-100 bg-slate-50 focus:bg-white focus:border-[var(--primary)] focus:outline-none transition-all"
+                            placeholder="Equipment, documents, or skills required..."></textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-black text-slate-500 uppercase mb-2 tracking-wide">Max
+                            Participants</label>
+                        <input type="number" id="eventMaxParticipants"
+                            class="w-full px-5 py-3 rounded-2xl border-2 border-slate-100 bg-slate-50 focus:bg-white focus:border-[var(--primary)] focus:outline-none transition-all"
+                            placeholder="Leave empty for unlimited">
+                    </div>
+
+                    <!-- Section: Contact & Media -->
+                    <div class="md:col-span-2">
+                        <h4 class="text-sm font-black text-slate-400 uppercase tracking-widest mt-4 mb-4 border-b pb-2">
+                            Contact & Media</h4>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-black text-slate-500 uppercase mb-2 tracking-wide">Contact
+                            Email</label>
+                        <input type="email" id="eventContactEmail"
+                            class="w-full px-5 py-3 rounded-2xl border-2 border-slate-100 bg-slate-50 focus:bg-white focus:border-[var(--primary)] focus:outline-none transition-all"
+                            placeholder="admin@federation.com">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-black text-slate-500 uppercase mb-2 tracking-wide">Contact
+                            Phone</label>
+                        <input type="tel" id="eventContactPhone"
+                            class="w-full px-5 py-3 rounded-2xl border-2 border-slate-100 bg-slate-50 focus:bg-white focus:border-[var(--primary)] focus:outline-none transition-all"
+                            placeholder="+94 77 123 4567">
+                    </div>
+
+                    <div class="md:col-span-2">
+                        <label class="block text-xs font-black text-slate-500 uppercase mb-2 tracking-wide">Banner Image
+                            URL</label>
+                        <input type="url" id="eventImageUrl"
+                            class="w-full px-5 py-3 rounded-2xl border-2 border-slate-100 bg-slate-50 focus:bg-white focus:border-[var(--primary)] focus:outline-none transition-all"
+                            placeholder="https://images.unsplash.com/photo-...">
+                    </div>
+                </div>
+
+                <!-- Footer Actions -->
+                <div class="flex gap-4 pt-10 sticky bottom-0 bg-white pb-2 mt-4 decoration-white">
+                    <button type="button" onclick="closeEventModal()"
+                        class="flex-1 py-4 rounded-2xl font-black text-slate-400 hover:bg-slate-50 hover:text-slate-600 transition-all uppercase tracking-widest text-sm">
+                        Dismiss
+                    </button>
+                    <button type="submit"
+                        class="flex-[2] py-4 rounded-2xl font-black bg-[var(--primary)] text-white hover:bg-[var(--secondary)] shadow-xl shadow-blue-900/10 transition-all uppercase tracking-widest text-sm transform hover:-translate-y-1 active:translate-y-0">
+                        Publish Event
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script type="module" src="events.js"></script>
+</body>
+
+</html>
