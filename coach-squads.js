@@ -6,6 +6,7 @@ import {
     getAllAthletes,
     createSquad,
     assignToSquad,
+    updateSquad,
     removeFromSquad,
     deleteSquad,
     BACKEND_URL
@@ -16,6 +17,7 @@ import { updateNavbar, showAlert, showConfirm } from "./ui-utils.js";
 let allAthletes = [];
 let coachSquads = {}; // athleteId -> squadName
 let coachSquadIds = {}; // squadName -> squadId
+let coachSquadPlans = {}; // squadName -> workoutPlan
 let currentCoachId = null;
 let availableSquads = []; // Array of squad names
 
@@ -30,6 +32,23 @@ const modalContent = document.getElementById("modalContent");
 const cancelSquadBtn = document.getElementById("cancelSquadBtn");
 const confirmSquadBtn = document.getElementById("confirmSquadBtn");
 const newSquadNameInput = document.getElementById("newSquadName");
+
+const workoutPlanModal = document.getElementById("workoutPlanModal");
+const planModalContent = document.getElementById("planModalContent");
+const cancelPlanBtn = document.getElementById("cancelPlanBtn");
+const savePlanBtn = document.getElementById("savePlanBtn");
+const squadWorkoutPlan = document.getElementById("squadWorkoutPlan");
+const editSquadName = document.getElementById("editSquadName");
+const planSquadId = document.getElementById("planSquadId");
+const planSquadNameHidden = document.getElementById("planSquadNameHidden");
+
+// WhatsApp Modal DOM
+const whatsappModal = document.getElementById("whatsappModal");
+const whatsappModalContent = document.getElementById("whatsappModalContent");
+const waCount = document.getElementById("waCount");
+const waNumbersList = document.getElementById("waNumbersList");
+const closeWaBtn = document.getElementById("closeWaBtn");
+const openWaBtn = document.getElementById("openWaBtn");
 
 const navUserBtn = document.getElementById("navUserBtn");
 const navUserDropdown = document.getElementById("navUserDropdown");
@@ -55,7 +74,10 @@ onAuthChange(async (user) => {
             // Available Squads
             const sList = data.squads || [];
             availableSquads = sList.map(s => s.name);
-            sList.forEach(s => coachSquadIds[s.name] = s.id);
+            sList.forEach(s => {
+                coachSquadIds[s.name] = s.id;
+                coachSquadPlans[s.name] = s.workout_plan || "";
+            });
 
             // Coach Squads Map (athleteId -> squadName)
             coachSquads = {};
@@ -71,6 +93,10 @@ onAuthChange(async (user) => {
             updateNavbar(user, data);
 
             await fetchAthletes();
+        } else {
+            // Profile doesn't exist
+            await showAlert("Please complete your coach profile first.", "Profile Missing");
+            window.location.href = "create-coach-profile.html";
         }
     } catch (e) {
         console.error("Error loading coach data", e);
@@ -131,11 +157,23 @@ function renderPools() {
                 <div class="w-3 h-3 rounded-full ${colorClass}"></div>
                 <h2 class="text-xs font-black text-slate-800 uppercase tracking-[0.2em] truncate" title="${sName}">${sName}</h2>
                 <span class="ml-auto ${colorClass.replace('bg-', 'bg-opacity-20 text-').replace('500', '600')} bg-gray-100 px-2 py-0.5 rounded text-[10px] font-bold">${count}</span>
-                <button onclick="confirmDeleteSquad('${sName}')" class="ml-2 p-1.5 rounded-lg hover:bg-red-50 text-red-500 hover:text-red-600 transition-colors" title="Delete Squad">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                <button onclick="createWhatsAppGroup('${sName}')" class="ml-auto mr-1 p-1.5 rounded-lg hover:bg-green-50 text-green-500 hover:text-green-600 transition-colors" title="Create WhatsApp Group">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.711 2.598 2.658-.698c.968.585 1.961.89 2.802.89l.003-.001c3.181 0 5.768-2.586 5.768-5.766.001-3.18-2.585-5.776-5.765-5.776zm.3 10.353c-.768 0-1.59-.204-1.928-.316l-1.372.36.366-1.338c-.376-.598-.63-1.246-.63-1.638 0-2.502 2.035-4.538 4.538-4.538 2.503 0 4.538 2.036 4.538 4.538s-2.035 4.538-4.538 4.538zm2.493-3.402c-.136-.068-.804-.397-.929-.443-.124-.046-.215-.068-.305.068-.09.137-.352.443-.431.534-.08.09-.158.102-.294.034-.136-.068-.574-.212-1.093-.675-.407-.363-.682-.812-.762-.948-.08-.137-.008-.21.06-.278.062-.061.136-.159.204-.239.068-.079.09-.136.136-.227.045-.091.022-.17-.011-.239-.034-.068-.305-.737-.418-1.01-.11-.264-.222-.228-.305-.232-.08-.005-.17-.005-.26-.005-.09 0-.237.034-.362.17-.125.137-.476.465-.476 1.135 0 .67.487 1.317.555 1.409.068.092.958 1.463 2.321 2.051.324.14.577.223.776.286.326.103.623.088.857.054.263-.039.804-.329.918-.646.113-.318.113-.591.079-.646-.034-.055-.124-.09-.26-.159z"/>
                     </svg>
                 </button>
+                <button onclick="openPlanModal('${sName}')" class="mr-2 p-1.5 rounded-lg hover:bg-slate-200 text-slate-500 hover:text-[var(--primary)] transition-colors" title="Manage Plan">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                    </svg>
+                </button>
+                <div class="relative group/del">
+                    <button onclick="confirmDeleteSquad('${sName}')" class="p-1.5 rounded-lg hover:bg-red-50 text-red-500 hover:text-red-600 transition-colors" title="Delete Squad">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                    </button>
+                </div>
             </div>
             <div class="squad-column p-4 rounded-[2.5rem] space-y-4" data-squad="${sName}"></div>
         `;
@@ -280,13 +318,18 @@ if (confirmSquadBtn) {
             // res comes with { message, squadId }? 
             // My backend returns { message: 'Squad created', id: result.insertId }
             coachSquadIds[name] = res.id;
+            coachSquadPlans[name] = "";
 
             closeModal();
             renderPools();
             showToast(`Squad "${name}" created!`);
         } catch (err) {
             console.error(err);
-            alert("Failed to create squad");
+            if (err.message && err.message.includes('foreign key constraint')) {
+                await showAlert("It usually means your coach profile is not fully set up. Please go to your profile page and save your details.", "Coach Profile Missing");
+            } else {
+                await showAlert(err.message || "Failed to create squad", "Error");
+            }
         }
     });
 }
@@ -497,3 +540,129 @@ window.confirmDeleteSquad = async function (squadName) {
         await showAlert(`Failed to delete squad: ${error.message}`, 'Error');
     }
 };
+
+// Plan Modal Functions
+window.openPlanModal = function (squadName) {
+    const squadId = coachSquadIds[squadName];
+    const plan = coachSquadPlans[squadName] || "";
+
+    planSquadId.value = squadId;
+    planSquadNameHidden.value = squadName; // store old name
+    editSquadName.value = squadName;
+    squadWorkoutPlan.value = plan;
+
+    workoutPlanModal.classList.remove("hidden");
+    setTimeout(() => {
+        planModalContent.classList.remove("scale-95", "opacity-0");
+        planModalContent.classList.add("scale-100", "opacity-100");
+    }, 10);
+};
+
+function closePlanModal() {
+    planModalContent.classList.remove("scale-100", "opacity-100");
+    planModalContent.classList.add("scale-95", "opacity-0");
+    setTimeout(() => {
+        workoutPlanModal.classList.add("hidden");
+    }, 300);
+}
+
+if (cancelPlanBtn) cancelPlanBtn.addEventListener("click", closePlanModal);
+
+if (savePlanBtn) {
+    savePlanBtn.addEventListener("click", async () => {
+        const squadId = planSquadId.value;
+        const oldName = planSquadNameHidden.value;
+        const newName = editSquadName.value.trim();
+        const newPlan = squadWorkoutPlan.value;
+
+        if (!newName) return alert("Squad name cannot be empty");
+
+        // If name changed, check duplicates
+        if (newName !== oldName && availableSquads.includes(newName)) {
+            return alert("Squad name already exists");
+        }
+
+        try {
+            await updateSquad(currentCoachId, squadId, { name: newName, workoutPlan: newPlan });
+
+            // Update local state
+            if (newName !== oldName) {
+                // Remove old
+                delete coachSquadIds[oldName];
+                delete coachSquadPlans[oldName];
+                const idx = availableSquads.indexOf(oldName);
+                if (idx !== -1) availableSquads[idx] = newName;
+
+                // Update assignments
+                Object.keys(coachSquads).forEach(aid => {
+                    if (coachSquads[aid] === oldName) coachSquads[aid] = newName;
+                });
+            }
+
+            coachSquadIds[newName] = squadId;
+            coachSquadPlans[newName] = newPlan;
+
+            showToast("Squad plan updated!");
+            closePlanModal();
+            renderPools(); // Re-render in case name changed
+        } catch (err) {
+            console.error(err);
+            await showAlert(err.message || "Failed to save plan", "Error");
+        }
+    });
+}
+
+
+// WhatsApp Group Functionality
+window.createWhatsAppGroup = async function (squadName) {
+    const athletes = allAthletes.filter(a => coachSquads[a.id] === squadName);
+    if (athletes.length === 0) {
+        return showAlert("This squad has no athletes.", "Info");
+    }
+
+    const phones = athletes
+        .map(a => a.personal?.phone || a.phone)
+        .filter(p => p && p.trim().length > 0);
+
+    if (phones.length === 0) {
+        return showAlert("None of the athletes in this squad have a phone number in their profile.", "No Numbers Found");
+    }
+
+    // Populate Modal
+    waCount.textContent = phones.length;
+    waNumbersList.value = phones.join(','); // Comma separated for easy bulk add
+
+    // Try creating a friendly clipboard text too
+    try {
+        await navigator.clipboard.writeText(waNumbersList.value);
+        // We can show a small tooltip or just the modal instruction implies it
+    } catch (err) {
+        console.error("Clipboard failed", err);
+    }
+
+    // Show Modal
+    whatsappModal.classList.remove("hidden");
+    setTimeout(() => {
+        whatsappModalContent.classList.remove("scale-95", "opacity-0");
+        whatsappModalContent.classList.add("scale-100", "opacity-100");
+    }, 10);
+};
+
+// WhatsApp Modal Listeners
+if (closeWaBtn) {
+    closeWaBtn.addEventListener("click", () => {
+        whatsappModalContent.classList.remove("scale-100", "opacity-100");
+        whatsappModalContent.classList.add("scale-95", "opacity-0");
+        setTimeout(() => {
+            whatsappModal.classList.add("hidden");
+        }, 300);
+    });
+}
+
+if (openWaBtn) {
+    openWaBtn.addEventListener("click", () => {
+        window.open('https://web.whatsapp.com', '_blank');
+        // Optional: Close modal after opening
+        // closeWaBtn.click();
+    });
+}

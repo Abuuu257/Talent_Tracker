@@ -113,19 +113,12 @@ onAuthChange(async (user) => {
 if (loginBtn) {
     loginBtn.addEventListener("click", async () => {
         clearErr();
-        const username = identifierInput.value.trim();
+        const identifier = identifierInput.value.trim();
         const password = passwordInput.value;
 
-        if (!username || !password) {
-            showErr("Please enter both username and password.");
+        if (!identifier || !password) {
+            showErr("Please enter your Phone, Email, or Username and password.");
             return;
-        }
-
-        // Fed check - Now uses actual database via loginUser
-        if (currentRole === "federation") {
-            // If it's the default 'admin' username, it won't look like an email
-            // loginUser handles the email/username lookup if we keep it simple here
-            // or we just let it fall through to the main login logic below.
         }
 
         loginBtn.disabled = true;
@@ -133,38 +126,11 @@ if (loginBtn) {
         showLoading();
 
         try {
-            // My backend register logic does NOT support login by username directly via `loginUser`.
-            // `loginUser` takes (email, password).
-            // So we fetch email first.
+            // Direct login with backend supporting Email/Phone/Username
+            const data = await loginUser(identifier, password, currentRole);
 
-            // User requested login with Username.
-            // If it looks like an email, we treat as email.
-            // If not, we try to lookup email from username or use username against updated backend.
-
-            // Current backend /login takes 'email' and 'password'.
-            // I should update backend to accept 'identifier' (email OR username).
-            // But since I have getUserByUsername, I can lookup email if input is username.
-
-            let loginEmail = username;
-            let loginUsername = username;
-
-            if (!username.includes("@")) {
-                // It's a username
-                const userObj = await getUserByUsername(username); // role param not needed for generic lookup
-                if (!userObj) {
-                    showErr("Username not found.");
-                    hideLoading();
-                    loginBtn.disabled = false;
-                    loginBtn.textContent = "Login";
-                    return;
-                }
-                loginEmail = userObj.email;
-                loginUsername = userObj.username;
-            }
-
-            await loginUser(loginEmail, password, currentRole);
-
-            localStorage.setItem("tt_username", loginUsername);
+            // Save user data
+            localStorage.setItem("tt_username", data.user.username);
             localStorage.setItem("tt_role", currentRole);
 
             if (currentRole === "athlete") {
@@ -182,6 +148,15 @@ if (loginBtn) {
             loginBtn.disabled = false;
             loginBtn.textContent = "Login";
         }
+    });
+}
+
+// Google Login Action
+const googleLoginBtn = document.getElementById("googleLoginBtn");
+if (googleLoginBtn) {
+    googleLoginBtn.addEventListener("click", () => {
+        // Placeholder for Google Sign In
+        alert("Google Sign In integration requires additional backend configuration (Client ID/Secret). Please use Phone/Email/Username for this update.");
     });
 }
 

@@ -63,6 +63,21 @@ onAuthChange(async (user) => {
                 name = data.username || data.personal?.fullName?.split(" ")[0] || name;
                 // profilePic extract removed, handled by updateNavbar
                 if (name) localStorage.setItem("tt_username", name);
+
+                // Render Squad Info
+                if (data.squad) {
+                    const squadSec = document.getElementById("athleteSquadSection");
+                    const sName = document.getElementById("squadNameDisplay");
+                    const sCoach = document.getElementById("squadCoachDisplay");
+                    const sPlan = document.getElementById("squadPlanText");
+
+                    if (squadSec) {
+                        squadSec.classList.remove("hidden");
+                        sName.textContent = data.squad.name || "Squad";
+                        sCoach.textContent = `Coach: ${data.squad.coach_name || "Unknown"}`;
+                        sPlan.textContent = data.squad.workout_plan || "No plan posted yet.";
+                    }
+                }
             }
         } catch (err) {
             console.error(err);
@@ -73,10 +88,68 @@ onAuthChange(async (user) => {
         updateNavbar(user, athleteData);
         if (heroUserDisplay) heroUserDisplay.textContent = name;
 
+        startPolling(user.uid);
+
     } else {
         window.location.href = "index.html";
     }
 });
+
+// Polling for Real-Time Updates (Squad Info)
+let pollingInterval = null;
+let lastSquadId = null;
+let lastPlan = null;
+
+function startPolling(uid) {
+    if (pollingInterval) clearInterval(pollingInterval);
+
+    const poll = async () => {
+        // OPTIMIZATION: Pause polling when tab is inactive
+        if (document.hidden) return;
+
+        try {
+            const data = await getAthleteProfile(uid);
+            if (data && data.exists && data.squad) {
+                const currentSquadId = data.squad.id;
+                const currentPlan = data.squad.workout_plan;
+
+                // Initialize last known state on first run if null (or logic can be improved)
+                if (lastSquadId === null) {
+                    lastSquadId = currentSquadId;
+                    lastPlan = currentPlan;
+                    return;
+                }
+
+                if (currentSquadId !== lastSquadId || currentPlan !== lastPlan) {
+                    console.log("Squad update on Home");
+                    lastSquadId = currentSquadId;
+                    lastPlan = currentPlan;
+
+                    // Update UI
+                    const squadSec = document.getElementById("athleteSquadSection");
+                    const sName = document.getElementById("squadNameDisplay");
+                    const sCoach = document.getElementById("squadCoachDisplay");
+                    const sPlan = document.getElementById("squadPlanText");
+
+                    if (squadSec) {
+                        squadSec.classList.remove("hidden");
+                        sName.textContent = data.squad.name || "Squad";
+                        sCoach.textContent = `Coach: ${data.squad.coach_name || "Unknown"}`;
+                        sPlan.textContent = data.squad.workout_plan || "No plan posted yet.";
+
+                        // Highlight change
+                        squadSec.classList.add("ring-4", "ring-[var(--highlight)]", "transition-all", "duration-500");
+                        setTimeout(() => squadSec.classList.remove("ring-4", "ring-[var(--highlight)]"), 2000);
+                    }
+                }
+            }
+        } catch (e) {
+            // silent
+        }
+    };
+
+    pollingInterval = setInterval(poll, 10000);
+}
 
 if (navUserBtn) {
     navUserBtn.addEventListener('click', (e) => {

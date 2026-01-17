@@ -357,14 +357,16 @@ export function showAlert(message, title = "Alert") {
     if (!modal) {
       modal = document.createElement("div");
       modal.id = "customAlertModal";
-      modal.className = "fixed inset-0 bg-black/50 backdrop-blur-sm z-[11000] hidden flex items-center justify-center";
+      modal.className = "fixed inset-0 bg-black/50 backdrop-blur-sm z-[11000] hidden overflow-y-auto";
       modal.innerHTML = `
-        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md p-8 transform transition-all scale-95 opacity-0" id="customAlertContent">
-          <h3 class="text-2xl font-black text-[#012A61] mb-4" id="customAlertTitle"></h3>
-          <p class="text-slate-600 mb-6 leading-relaxed" id="customAlertMessage"></p>
-          <button id="customAlertBtn" class="w-full py-3 rounded-xl font-bold bg-[#012A61] text-white hover:bg-[#275A91] shadow-lg transition-all">
-            OK
-          </button>
+        <div class="flex min-h-full items-center justify-center p-4">
+          <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md p-8 transform transition-all scale-95 opacity-0" id="customAlertContent">
+            <h3 class="text-2xl font-black text-[#012A61] mb-4" id="customAlertTitle"></h3>
+            <p class="text-slate-600 mb-6 leading-relaxed" id="customAlertMessage"></p>
+            <button id="customAlertBtn" class="w-full py-3 rounded-xl font-bold bg-[#012A61] text-white hover:bg-[#275A91] shadow-lg transition-all">
+              OK
+            </button>
+          </div>
         </div>
       `;
       document.body.appendChild(modal);
@@ -414,18 +416,20 @@ export function showConfirm(message, title = "Confirm") {
     if (!modal) {
       modal = document.createElement("div");
       modal.id = "customConfirmModal";
-      modal.className = "fixed inset-0 bg-black/50 backdrop-blur-sm z-[11000] hidden flex items-center justify-center";
+      modal.className = "fixed inset-0 bg-black/50 backdrop-blur-sm z-[11000] hidden overflow-y-auto";
       modal.innerHTML = `
-        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md p-8 transform transition-all scale-95 opacity-0" id="customConfirmContent">
-          <h3 class="text-2xl font-black text-[#012A61] mb-4" id="customConfirmTitle"></h3>
-          <p class="text-slate-600 mb-6 leading-relaxed whitespace-pre-line" id="customConfirmMessage"></p>
-          <div class="flex gap-4">
-            <button id="customConfirmCancel" class="flex-1 py-3 rounded-xl font-bold text-slate-500 hover:bg-slate-50 transition-colors">
-              Cancel
-            </button>
-            <button id="customConfirmOk" class="flex-1 py-3 rounded-xl font-bold bg-red-500 text-white hover:bg-red-600 shadow-lg transition-all">
-              Confirm
-            </button>
+        <div class="flex min-h-full items-center justify-center p-4">
+          <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md p-8 transform transition-all scale-95 opacity-0" id="customConfirmContent">
+            <h3 class="text-2xl font-black text-[#012A61] mb-4" id="customConfirmTitle"></h3>
+            <p class="text-slate-600 mb-6 leading-relaxed whitespace-pre-line" id="customConfirmMessage"></p>
+            <div class="flex gap-4">
+              <button id="customConfirmCancel" class="flex-1 py-3 rounded-xl font-bold text-slate-500 hover:bg-slate-50 transition-colors">
+                Cancel
+              </button>
+              <button id="customConfirmOk" class="flex-1 py-3 rounded-xl font-bold bg-red-500 text-white hover:bg-red-600 shadow-lg transition-all">
+                Confirm
+              </button>
+            </div>
           </div>
         </div>
       `;

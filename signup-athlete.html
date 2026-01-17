@@ -43,20 +43,26 @@
       <div>
         <label class="text-sm font-semibold text-primaryBlue">Username</label>
         <input id="username" type="text" required class="w-full mt-1 px-4 py-2 rounded-lg border border-gray-300
-                 focus:outline-none focus:ring-2 focus:ring-accentBlue" />
+                 focus:outline-none focus:ring-2 focus:ring-accentBlue" placeholder="Enter your username" />
       </div>
 
       <div>
-        <label class="text-sm font-semibold text-primaryBlue">Email</label>
-        <input id="email" type="email" required class="w-full mt-1 px-4 py-2 rounded-lg border border-gray-300
-                 focus:outline-none focus:ring-2 focus:ring-accentBlue" />
+        <label class="text-sm font-semibold text-primaryBlue">Phone Number</label>
+        <input id="phone" type="tel" required class="w-full mt-1 px-4 py-2 rounded-lg border border-gray-300
+                 focus:outline-none focus:ring-2 focus:ring-accentBlue" placeholder="e.g. 0771234567" />
+      </div>
+
+      <div>
+        <label class="text-sm font-semibold text-primaryBlue">Email (Optional)</label>
+        <input id="email" type="email" class="w-full mt-1 px-4 py-2 rounded-lg border border-gray-300
+                 focus:outline-none focus:ring-2 focus:ring-accentBlue" placeholder="Enter your email" />
       </div>
 
       <div class="space-y-1">
         <label class="text-sm font-semibold text-primaryBlue">Password</label>
         <div class="relative">
           <input id="password" type="password" required class="w-full mt-1 px-4 py-2 rounded-lg border border-gray-300
-                   focus:outline-none focus:ring-2 focus:ring-accentBlue pr-12" />
+                   focus:outline-none focus:ring-2 focus:ring-accentBlue pr-12" placeholder="Enter your password" />
           <button type="button" id="togglePassword"
             class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-accentBlue focus:outline-none group">
             <svg class="w-5 h-5 transition-all group-active:scale-95" fill="none" stroke="currentColor"
@@ -78,6 +84,16 @@
       <button type="submit" class="w-full bg-accentBlue text-white py-2 rounded-lg
                hover:bg-accentBlueHover transition font-semibold">
         Create Account
+      </button>
+
+      <button type="button" id="googleSignupBtn"
+        class="w-full bg-white text-gray-700 border-2 border-gray-200 py-2 rounded-lg
+               hover:bg-gray-50 transition font-bold flex items-center justify-center gap-2 mt-4 text-xs uppercase tracking-wide">
+        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+          <path
+            d="M12.545,10.239v3.821h5.445c-0.712,2.315-2.647,3.972-5.445,3.972c-3.332,0-6.033-2.701-6.033-6.032s2.701-6.032,6.033-6.032c1.498,0,2.866,0.549,3.921,1.453l2.814-2.814C17.503,2.988,15.139,2,12.545,2C7.021,2,2.543,6.477,2.543,12s4.478,10,10.002,10c8.396,0,10.249-7.85,9.426-11.748L12.545,10.239z" />
+        </svg>
+        Sign up with Google
       </button>
     </form>
 

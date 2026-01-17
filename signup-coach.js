@@ -47,10 +47,11 @@ form.addEventListener("submit", async (e) => {
 
     const username = document.getElementById("username").value.trim();
     const email = document.getElementById("email").value.trim();
+    const phone = document.getElementById("phone").value.trim();
     const password = document.getElementById("password").value;
 
-    if (!username || !email || !password) {
-        showError("All fields are required.");
+    if (!username || !password || !phone) {
+        showError("Username, Phone, and Password are required.");
         return;
     }
     if (username.length < 4) {
@@ -64,7 +65,7 @@ form.addEventListener("submit", async (e) => {
 
     try {
         showLoading();
-        await registerUser(email, password, username, "coach");
+        await registerUser(email, password, username, "coach", phone);
         await logoutUser();
 
         showSuccessModal("Coach account created successfully! Please login.", () => {
@@ -78,3 +79,10 @@ form.addEventListener("submit", async (e) => {
         hideLoading();
     }
 });
+
+const googleBtn = document.getElementById("googleSignupBtn");
+if (googleBtn) {
+    googleBtn.addEventListener("click", () => {
+        alert("Google Sign Up integration requires backend configuration. Please use Phone Number sign up.");
+    });
+}

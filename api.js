@@ -21,7 +21,10 @@ export async function createSquad(coachId, name) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name })
     });
-    if (!res.ok) throw new Error('Failed to create squad');
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || 'Failed to create squad');
+    }
     return res.json();
 }
 
@@ -50,6 +53,19 @@ export async function deleteSquad(coachId, squadId) {
     if (!res.ok) {
         const errorData = await res.json().catch(() => ({ error: 'Unknown error' }));
         throw new Error(errorData.error || 'Failed to delete squad');
+    }
+    return res.json();
+}
+
+export async function updateSquad(coachId, squadId, data) {
+    const res = await fetch(`${API_URL}/coach/${coachId}/squad/${squadId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    });
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || 'Failed to update squad');
     }
     return res.json();
 }
@@ -115,11 +131,11 @@ export async function updateUserStatus(uid, status, role) {
     return res.json();
 }
 
-export async function register(email, password, username, role) {
+export async function register(email, password, username, role, phone) {
     const res = await fetch(`${API_URL}/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password, username, role })
+        body: JSON.stringify({ email, password, username, role, phone })
     });
     if (!res.ok) {
         const err = await res.json();

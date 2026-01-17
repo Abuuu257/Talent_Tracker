@@ -54,6 +54,17 @@ router.get('/:id', async (req, res) => {
         const [achievements] = await db.query('SELECT * FROM athlete_achievements WHERE athlete_id = ?', [req.params.id]);
         const [performances] = await db.query('SELECT * FROM athlete_performance_results WHERE athlete_id = ?', [req.params.id]);
 
+        // Fetch Squad (Fetch user's assigned squad)
+        const [squads] = await db.query(
+            `SELECT s.id, s.name, s.workout_plan, s.coach_id, c.full_name as coach_name 
+             FROM squad_athletes sa 
+             JOIN squads s ON sa.squad_id = s.id 
+             LEFT JOIN coaches c ON s.coach_id = c.user_id 
+             WHERE sa.athlete_id = ?`,
+            [req.params.id]
+        );
+        const squadData = squads.length > 0 ? squads[0] : null;
+
         // Group performances by event
         const perfMap = {};
         performances.forEach(p => {
@@ -123,7 +134,8 @@ router.get('/:id', async (req, res) => {
                 date: a.date
             })),
             performanceResults: perfMap,
-            verifications: verifications
+            verifications: verifications,
+            squad: squadData
         };
 
         res.json(profileData);

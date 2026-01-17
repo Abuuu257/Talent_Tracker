@@ -151,11 +151,58 @@ onAuthChange(async (user) => {
 
     } catch (err) {
         console.error(err);
-        if (!athleteDocData) showMessage("Error connecting", "error");
     } finally {
         hideLoading();
+        startPolling(); // Start polling for squad updates
     }
 });
+
+// Polling for Real-Time Updates (e.g. Squad Assignment)
+let pollingInterval = null;
+function startPolling() {
+    if (pollingInterval) clearInterval(pollingInterval);
+
+    // Poll every 10 seconds
+    const poll = async () => {
+        // OPTIMIZATION: Stop polling if tab is not active to save resources
+        if (document.hidden) return;
+
+        if (!currentUID) return;
+        try {
+            // Background fetch - silent
+            const freshData = await getAthleteProfile(currentUID);
+            if (freshData && freshData.exists) {
+                // Check if Squad Changed
+                const oldSquadId = athleteDocData.squad ? athleteDocData.squad.id : null;
+                const newSquadId = freshData.squad ? freshData.squad.id : null;
+
+                const oldPlan = athleteDocData.squad ? athleteDocData.squad.workout_plan : null;
+                const newPlan = freshData.squad ? freshData.squad.workout_plan : null;
+
+                if (oldSquadId !== newSquadId || oldPlan !== newPlan) {
+                    console.log("Squad update detected via polling.");
+                    athleteDocData = freshData;
+                    localStorage.setItem(`tt_profile_${currentUID}`, JSON.stringify(athleteDocData));
+
+                    // Re-render relevant sections
+                    renderFullProfile();
+
+                    // Show a friendly toast notification
+                    if (oldSquadId !== newSquadId) {
+                        showMessage("Your squad assignment has significantly changed!", "success");
+                    } else if (oldPlan !== newPlan) {
+                        showMessage("New workout plan available!", "info");
+                    }
+                }
+            }
+        } catch (err) {
+            // silent fail on polling errors
+            console.warn("Polling error", err);
+        }
+    };
+
+    pollingInterval = setInterval(poll, 10000);
+}
 
 const handleLogout = async () => {
     try {
@@ -300,6 +347,11 @@ function renderFullProfile() {
     html += createRow("Weight", `${m.weight || "-"} kg`);
     html += createRow("Blood", m.blood);
     html += createRow("Medical", m.medical);
+
+    // Add Squad Display
+    const squadName = athleteDocData.squad ? athleteDocData.squad.name : "Unassigned";
+    html += createRow("Current Squad", squadName);
+
     html += createRow("Category", a.category);
     html += createRow("Coach", a.coach);
     html += createRow("Training", a.trainingDays);

@@ -7,6 +7,7 @@ import {
     uploadFile
 } from "./register.js";
 import { showLoading, hideLoading, updateNavbar } from "./ui-utils.js";
+import { setupDropdownInput, syncDropdown, CITIES } from "./locations.js";
 
 // Global Variables
 let currentUID = null;
@@ -222,6 +223,9 @@ async function loadProfileForEdit() {
 
             if (submitBtn) submitBtn.textContent = "Update Profile";
             displayMessage("Profile data loaded for editing.", "success");
+
+            // Sync Dropdown
+            syncDropdown("citySelect", "city", CITIES);
         }
     } catch (err) {
         console.error("Error loading profile for edit:", err);
@@ -547,3 +551,7 @@ window.submitProfile = async function () {
         hideLoading();
     }
 };
+// Init Location Dropdowns
+document.addEventListener('DOMContentLoaded', () => {
+    setupDropdownInput('citySelect', 'city', CITIES);
+});

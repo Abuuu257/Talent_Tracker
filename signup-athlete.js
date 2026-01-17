@@ -49,10 +49,13 @@ form.addEventListener("submit", async (e) => {
   const email = document.getElementById("email").value.trim();
   const password = document.getElementById("password").value;
 
-  if (!username || !email || !password) {
-    showError("All fields are required.");
+  const phone = document.getElementById("phone").value.trim();
+
+  if (!username || !password || !phone) {
+    showError("Username, Phone, and Password are required.");
     return;
   }
+
   if (username.length < 4) {
     showError("Username must be at least 4 characters.");
     return;
@@ -64,7 +67,8 @@ form.addEventListener("submit", async (e) => {
 
   try {
     showLoading();
-    await registerUser(email, password, username, "athlete");
+    // Pass email as is (optional, might be empty string)
+    await registerUser(email, password, username, "athlete", phone);
     await logoutUser();
 
     showSuccessModal("Account created successfully! Please login.", () => {
@@ -78,3 +82,10 @@ form.addEventListener("submit", async (e) => {
     hideLoading();
   }
 });
+
+const googleBtn = document.getElementById("googleSignupBtn");
+if (googleBtn) {
+  googleBtn.addEventListener("click", () => {
+    alert("Google Sign Up integration requires backend configuration. Please use Phone Number sign up.");
+  });
+}

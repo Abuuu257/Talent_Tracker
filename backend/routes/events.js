@@ -66,48 +66,6 @@ router.post('/', async (req, res) => {
                 contact_email, contact_phone, image_url, created_by]
         );
 
-        // Check if email is configured
-        if (!process.env.EMAIL_USER || process.env.EMAIL_USER.includes('your-email')) {
-            console.warn("⚠️ Email not sent: EMAIL_USER is not configured in .env");
-            return res.json({ message: 'Event created, but email service not configured', eventId: result.insertId });
-        }
-
-        // Send email to all athletes (in background to prevent timeout)
-        db.query('SELECT email, full_name FROM athletes WHERE email IS NOT NULL')
-            .then(([athleteList]) => {
-                if (athleteList.length > 0) {
-                    console.log(`Starting background email delivery to ${athleteList.length} athletes...`);
-                    const emailPromises = athleteList.map(athlete => {
-                        const mailOptions = {
-                            from: process.env.EMAIL_USER || 'your-email@gmail.com',
-                            to: athlete.email,
-                            subject: `New Event: ${title}`,
-                            html: `
-                                <h2>New Event Announcement</h2>
-                                <p>Dear ${athlete.full_name || 'Athlete'},</p>
-                                <p>A new event has been posted on Talent Tracker!</p>
-                                <h3>${title}</h3>
-                                <p><strong>Date:</strong> ${event_date}</p>
-                                <p><strong>Venue:</strong> ${venue}, ${city}</p>
-                                <p><strong>Category:</strong> ${category}</p>
-                                <p>${description}</p>
-                                <p><strong>Registration Deadline:</strong> ${registration_deadline}</p>
-                                <p>Login to Talent Tracker to view full details and register!</p>
-                                <p>Best regards,<br>Talent Tracker Team</p>
-                            `
-                        };
-                        return transporter.sendMail(mailOptions).catch(err => {
-                            console.error(`Failed to send email to ${athlete.email}:`, err);
-                        });
-                    });
-                    return Promise.all(emailPromises);
-                }
-            })
-            .then((results) => {
-                if (results) console.log("Background email delivery process finished.");
-            })
-            .catch(err => console.error("Background email process error:", err));
-
         // Respond immediately so the UI doesn't hang
         res.json({ message: 'Event created successfully', eventId: result.insertId });
     } catch (error) {
@@ -162,37 +120,6 @@ router.post('/:id/register', async (req, res) => {
             'INSERT INTO event_registrations (event_id, athlete_id) VALUES (?, ?)',
             [req.params.id, athlete_id]
         );
-
-        // Send registration confirmation email (in background)
-        Promise.all([
-            db.query('SELECT * FROM events WHERE id = ?', [req.params.id]),
-            db.query('SELECT email, full_name FROM athletes WHERE user_id = ?', [athlete_id])
-        ]).then(([[eventRes], [athleteRes]]) => {
-            if (eventRes.length > 0 && athleteRes.length > 0) {
-                const event = eventRes[0];
-                const athlete = athleteRes[0];
-                const mailOptions = {
-                    from: process.env.EMAIL_USER || 'your-email@gmail.com',
-                    to: athlete.email,
-                    subject: `Registration Confirmed: ${event.title}`,
-                    html: `
-                        <h2>Registration Successful!</h2>
-                        <p>Dear ${athlete.full_name},</p>
-                        <p>You have successfully registered for the following event:</p>
-                        <div style="background: #f4f4f4; padding: 20px; border-radius: 10px;">
-                            <h3 style="margin-top:0;">${event.title}</h3>
-                            <p><strong>Date:</strong> ${event.event_date}</p>
-                            <p><strong>Venue:</strong> ${event.venue}, ${event.city}</p>
-                        </div>
-                        <p>Please ensure you arrive at least 30 minutes before the event starts.</p>
-                        <p>Best regards,<br>Talent Tracker Team</p>
-                    `
-                };
-                return transporter.sendMail(mailOptions);
-            }
-        }).catch(err => {
-            console.error("❌ REGISTRATION EMAIL FAILED:", err.message);
-        });
 
         res.json({ message: 'Successfully registered for event' });
     } catch (error) {

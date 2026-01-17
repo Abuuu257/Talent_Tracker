@@ -161,6 +161,9 @@ router.post('/:id/squad', async (req, res) => {
         res.json({ id: result.insertId, message: 'Squad created' });
     } catch (error) {
         console.error(error);
+        if (error.errno === 1452) {
+            return res.status(400).json({ error: 'Coach profile not found. Please complete your profile first.' });
+        }
         res.status(500).json({ error: 'Error creating squad' });
     }
 });
@@ -207,6 +210,40 @@ router.delete('/:id/squad/:squadId/athlete/:athleteId', async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Error removing from squad' });
+    }
+});
+
+// Update Squad (Plan/Name)
+router.put('/:id/squad/:squadId', async (req, res) => {
+    const { name, workoutPlan } = req.body;
+    try {
+        // Build dynamic query based on what's provided
+        let fields = [];
+        let params = [];
+
+        if (name !== undefined) {
+            fields.push('name = ?');
+            params.push(name);
+        }
+        if (workoutPlan !== undefined) {
+            fields.push('workout_plan = ?');
+            params.push(workoutPlan);
+        }
+
+        if (fields.length === 0) {
+            return res.json({ message: 'No changes provided' });
+        }
+
+        params.push(req.params.squadId);
+        params.push(req.params.id);
+
+        const sql = `UPDATE squads SET ${fields.join(', ')} WHERE id = ? AND coach_id = ?`;
+
+        await db.query(sql, params);
+        res.json({ message: 'Squad updated successfully' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Error updating squad' });
     }
 });
 

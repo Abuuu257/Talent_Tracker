@@ -49,7 +49,9 @@ onAuthChange(async (user) => {
 
             updateNavbar(user, data);
         } else {
-            updateNavbar(user, null);
+            // Profile doesn't exist
+            window.location.href = "create-coach-profile.html";
+            return;
         }
     } catch (e) {
         console.error("Error fetching coach data", e);

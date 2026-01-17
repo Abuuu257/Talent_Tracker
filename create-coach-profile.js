@@ -6,6 +6,7 @@ import {
     uploadFile
 } from "./register.js";
 import { showLoading, hideLoading, showSuccessModal } from "./ui-utils.js";
+import { setupDropdownInput, syncDropdown, CITIES, DISTRICTS, PROVINCES } from "./locations.js";
 
 let currentUID = null;
 const form = document.getElementById("coachProfileForm");
@@ -36,7 +37,14 @@ onAuthChange(async (user) => {
             if (data.city) document.getElementById("city").value = data.city;
             if (data.district) document.getElementById("district").value = data.district;
             if (data.province) document.getElementById("province").value = data.province;
-            if (data.sports) document.getElementById("sports").value = data.sports;
+            if (data.province) document.getElementById("province").value = data.province;
+            if (data.sports) {
+                const events = data.sports.split(',').map(s => s.trim());
+                events.forEach(evt => {
+                    const cb = document.querySelector(`input[name="sportEvent"][value="${evt}"]`);
+                    if (cb) cb.checked = true;
+                });
+            }
             if (data.coachingLevel) document.getElementById("coachingLevel").value = data.coachingLevel;
             if (data.coachingRole) document.getElementById("coachingRole").value = data.coachingRole;
             if (data.experience) document.getElementById("experience").value = data.experience;
@@ -58,6 +66,11 @@ onAuthChange(async (user) => {
                 }
             }
         }
+
+        // Sync Locations
+        syncDropdown("citySelect", "city", CITIES);
+        syncDropdown("districtSelect", "district", DISTRICTS);
+        syncDropdown("provinceSelect", "province", PROVINCES);
 
         const navBtnText = document.getElementById("navBtnText");
         const navUserPic = document.getElementById("navUserPic");
@@ -149,7 +162,7 @@ form.addEventListener("submit", async (e) => {
     const requiredFields = [
         "fullName", "gender", "dob", "nationality", "nic",
         "email", "phone", "street", "city", "district", "province",
-        "sports", "coachingLevel", "coachingRole", "experience", "organization",
+        "coachingLevel", "coachingRole", "experience", "organization",
         "highestQual", "issuingAuthority", "certId"
     ];
 
@@ -252,6 +265,16 @@ form.addEventListener("submit", async (e) => {
         }
     }
 
+
+
+    // Validate Sports Checkboxes
+    const selectedSports = Array.from(document.querySelectorAll('input[name="sportEvent"]:checked'));
+    if (selectedSports.length === 0) {
+        document.getElementById("error-sports").classList.add("visible");
+        document.getElementById("sportsContainer").classList.add("input-error");
+        isValid = false;
+    }
+
     const terms = document.getElementById("termsConsent");
     const dataUsage = document.getElementById("dataConsent");
     const authC = document.getElementById("authConsent");
@@ -324,7 +347,7 @@ form.addEventListener("submit", async (e) => {
             district: document.getElementById("district").value,
             province: document.getElementById("province").value,
 
-            sports: document.getElementById("sports").value,
+            sports: Array.from(document.querySelectorAll('input[name="sportEvent"]:checked')).map(cb => cb.value).join(', '),
             coachingLevel: document.getElementById("coachingLevel").value,
             coachingRole: document.getElementById("coachingRole").value,
             experience: parseInt(document.getElementById("experience").value),
@@ -356,4 +379,11 @@ form.addEventListener("submit", async (e) => {
         hideLoading();
         alert("An error occurred while saving your profile: " + (error.message || error));
     }
+});
+
+// Init Location Dropdowns
+document.addEventListener('DOMContentLoaded', () => {
+    setupDropdownInput('citySelect', 'city', CITIES);
+    setupDropdownInput('districtSelect', 'district', DISTRICTS);
+    setupDropdownInput('provinceSelect', 'province', PROVINCES);
 });

@@ -25,7 +25,6 @@
         }
 
         .squad-column {
-            min-height: 500px;
             background: rgba(255, 255, 255, 0.5);
             backdrop-filter: blur(8px);
             border: 2px dashed #cbd5e1;
@@ -137,7 +136,7 @@
                         class="bg-slate-200 text-slate-600 px-2 py-0.5 rounded text-[10px] font-bold">0</span>
                 </div>
                 <div id="unassignedPool"
-                    class="squad-column p-4 rounded-[2rem] space-y-4 overflow-y-auto max-h-[700px]">
+                    class="squad-column min-h-[200px] md:min-h-[500px] p-4 rounded-[2rem] space-y-4 overflow-y-auto max-h-[700px]">
                     <!-- Athletes will be loaded here -->
                     <div class="animate-pulse bg-white/50 h-24 rounded-2xl"></div>
                     <div class="animate-pulse bg-white/50 h-24 rounded-2xl"></div>
@@ -163,26 +162,122 @@
         </div>
 
         <!-- CREATE SQUAD MODAL -->
-        <div id="createSquadModal"
-            class="fixed inset-0 bg-black/50 backdrop-blur-sm z-[150] hidden flex items-center justify-center">
-            <div class="bg-white p-8 rounded-3xl shadow-2xl w-full max-w-md transform transition-all scale-95 opacity-0"
-                id="modalContent">
-                <h3 class="text-2xl font-black text-[var(--primary)] mb-2">New Squad</h3>
-                <p class="text-slate-500 text-sm mb-6">Give your new training group a name.</p>
+        <div id="createSquadModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-[150] hidden overflow-y-auto">
+            <div class="flex min-h-full items-center justify-center p-4">
+                <div class="bg-white p-6 md:p-8 rounded-3xl shadow-2xl w-full max-w-md transform transition-all scale-95 opacity-0"
+                    id="modalContent">
+                    <h3 class="text-2xl font-black text-[var(--primary)] mb-2">New Squad</h3>
+                    <p class="text-slate-500 text-sm mb-6">Give your new training group a name.</p>
 
-                <input type="text" id="newSquadName" placeholder="e.g. Sprinters A-Team"
-                    class="w-full px-4 py-3 rounded-xl border-2 border-slate-100 focus:border-[var(--primary)] focus:outline-none font-bold text-slate-700 mb-6">
+                    <input type="text" id="newSquadName" placeholder="e.g. Sprinters A-Team"
+                        class="w-full px-4 py-3 rounded-xl border-2 border-slate-100 focus:border-[var(--primary)] focus:outline-none font-bold text-slate-700 mb-6">
 
-                <div class="flex gap-4">
-                    <button id="cancelSquadBtn"
-                        class="flex-1 py-3 rounded-xl font-bold text-slate-500 hover:bg-slate-50 transition-colors">Cancel</button>
-                    <button id="confirmSquadBtn"
-                        class="flex-1 py-3 rounded-xl font-bold bg-[var(--primary)] text-white hover:bg-[var(--secondary)] shadow-lg transition-all">Create
-                        Squad</button>
+                    <div class="flex gap-4">
+                        <button id="cancelSquadBtn"
+                            class="flex-1 py-3 rounded-xl font-bold text-slate-500 hover:bg-slate-50 transition-colors">Cancel</button>
+                        <button id="confirmSquadBtn"
+                            class="flex-1 py-3 rounded-xl font-bold bg-[var(--primary)] text-white hover:bg-[var(--secondary)] shadow-lg transition-all">Create
+                            Squad</button>
+                    </div>
                 </div>
             </div>
         </div>
+        </div>
+        </div>
+
+        <!-- WORKOUT PLAN MODAL -->
+        <div id="workoutPlanModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-[150] hidden overflow-y-auto">
+            <div class="flex min-h-full items-center justify-center p-4">
+                <div class="bg-white p-6 md:p-8 rounded-3xl shadow-2xl w-full max-w-lg transform transition-all scale-95 opacity-0"
+                    id="planModalContent">
+                    <h3 class="text-2xl font-black text-[var(--primary)] mb-2">Squad Workout Plan</h3>
+                    <p class="text-slate-500 text-sm mb-6">Create or update the workout plan for this squad. Visible to
+                        all
+                        members.</p>
+
+                    <input type="hidden" id="planSquadId">
+                    <input type="hidden" id="planSquadNameHidden">
+
+                    <div class="mb-4">
+                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Squad
+                            Name</label>
+                        <input type="text" id="editSquadName"
+                            class="w-full px-4 py-3 rounded-xl border-2 border-slate-100 focus:border-[var(--primary)] focus:outline-none font-bold text-slate-700">
+                    </div>
+
+                    <div class="mb-6">
+                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Weekly Plan
+                            /
+                            Notes</label>
+                        <textarea id="squadWorkoutPlan" rows="6" placeholder="e.g. Monday: Sprints, Tuesday: Rest..."
+                            class="w-full px-4 py-3 rounded-xl border-2 border-slate-100 focus:border-[var(--primary)] focus:outline-none font-medium text-slate-700 resize-none"></textarea>
+                    </div>
+
+                    <div class="flex gap-4">
+                        <button id="cancelPlanBtn"
+                            class="flex-1 py-3 rounded-xl font-bold text-slate-500 hover:bg-slate-50 transition-colors">Cancel</button>
+                        <button id="savePlanBtn"
+                            class="flex-1 py-3 rounded-xl font-bold bg-[var(--primary)] text-white hover:bg-[var(--secondary)] shadow-lg transition-all">Save
+                            Plan</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        </div>
+        </div>
     </main>
+
+    <!-- WHATSAPP MODAL -->
+    <div id="whatsappModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-[150] hidden overflow-y-auto">
+        <div class="flex min-h-full items-center justify-center p-4">
+            <div class="bg-white p-6 md:p-8 rounded-3xl shadow-2xl w-full max-w-md transform transition-all scale-95 opacity-0"
+                id="whatsappModalContent">
+                <div class="flex items-center gap-3 mb-4 text-green-600">
+                    <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">
+                        <path
+                            d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.711 2.598 2.658-.698c.968.585 1.961.89 2.802.89l.003-.001c3.181 0 5.768-2.586 5.768-5.766.001-3.18-2.585-5.776-5.765-5.776zm.3 10.353c-.768 0-1.59-.204-1.928-.316l-1.372.36.366-1.338c-.376-.598-.63-1.246-.63-1.638 0-2.502 2.035-4.538 4.538-4.538 2.503 0 4.538 2.036 4.538 4.538s-2.035 4.538-4.538 4.538zm2.493-3.402c-.136-.068-.804-.397-.929-.443-.124-.046-.215-.068-.305.068-.09.137-.352.443-.431.534-.08.09-.158.102-.294.034-.136-.068-.574-.212-1.093-.675-.407-.363-.682-.812-.762-.948-.08-.137-.008-.21.06-.278.062-.061.136-.159.204-.239.068-.079.09-.136.136-.227.045-.091.022-.17-.011-.239-.034-.068-.305-.737-.418-1.01-.11-.264-.222-.228-.305-.232-.08-.005-.17-.005-.26-.005-.09 0-.237.034-.362.17-.125.137-.476.465-.476 1.135 0 .67.487 1.317.555 1.409.068.092.958 1.463 2.321 2.051.324.14.577.223.776.286.326.103.623.088.857.054.263-.039.804-.329.918-.646.113-.318.113-.591.079-.646-.034-.055-.124-.09-.26-.159z" />
+                    </svg>
+                    <h3 class="text-2xl font-black text-[var(--primary)]">WhatsApp Group</h3>
+                </div>
+                <p class="text-slate-500 text-sm mb-4">
+                    We found <strong id="waCount" class="text-slate-800">0</strong> phone numbers. Use them to create a
+                    group.
+                </p>
+
+                <div class="mb-4 bg-green-50 p-4 rounded-xl border border-green-100">
+                    <p class="text-xs font-bold text-green-700 uppercase mb-2">Instructions</p>
+                    <ol class="list-decimal list-inside text-xs text-green-800 space-y-1 font-medium">
+                        <li>Numbers are copied to your clipboard.</li>
+                        <li>Open WhatsApp / WhatsApp Web.</li>
+                        <li>Start a <strong>"New Group"</strong>.</li>
+                        <li>Paste numbers to add participants.</li>
+                    </ol>
+                </div>
+
+                <div class="mb-6">
+                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Numbers (Copy
+                        if
+                        needed)</label>
+                    <textarea id="waNumbersList" rows="3" readonly onclick="this.select()"
+                        class="w-full px-4 py-3 rounded-xl border-2 border-slate-100 focus:border-[var(--primary)] focus:outline-none font-mono text-xs text-slate-600 resize-none bg-slate-50"></textarea>
+                </div>
+
+                <div class="flex gap-4">
+                    <button id="closeWaBtn"
+                        class="flex-1 py-3 rounded-xl font-bold text-slate-500 hover:bg-slate-50 transition-colors">Close</button>
+                    <button id="openWaBtn"
+                        class="flex-1 py-3 rounded-xl font-bold bg-[#25D366] text-white hover:bg-[#128C7E] shadow-lg transition-all flex items-center justify-center gap-2">
+                        Open WhatsApp
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
 
     <!-- SUCCESS TOAST -->
     <div id="toast"

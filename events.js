@@ -1,11 +1,26 @@
 import { auth, onAuthChange, signOut } from "./register.js";
 import * as API from "./api.js";
 import { showAlert, showConfirm, updateNavbar, showLoading, hideLoading } from "./ui-utils.js";
+import { setupDropdownInput, syncDropdown, CITIES } from "./locations.js";
+
+// WhatsApp DOM
+const waEventModal = document.getElementById("waEventModal");
+const waEventModalContent = document.getElementById("waEventModalContent");
+const waEventCount = document.getElementById("waEventCount");
+const waEventMessage = document.getElementById("waEventMessage");
+const waEventNumbers = document.getElementById("waEventNumbers");
+const copyWaMsgBtn = document.getElementById("copyWaMsgBtn");
+const copyWaNumBtn = document.getElementById("copyWaNumBtn");
+const closeWaEventBtn = document.getElementById("closeWaEventBtn");
+const openWaEventBtn = document.getElementById("openWaEventBtn");
 
 let currentUser = null;
 let currentRole = null;
 let allEvents = [];
+let filteredEvents = [];
 let editingEventId = null;
+let calendar = null;
+let currentView = 'grid';
 
 // Check if user is already logged in
 const storedUser = localStorage.getItem('user');
@@ -146,25 +161,8 @@ async function loadEvents() {
 
     try {
         allEvents = await API.getAllEvents();
-
-        // Hide loading state
-        grid.innerHTML = "";
-
-        if (!allEvents || allEvents.length === 0) {
-            // Role-specific empty state text
-            if (currentRole === "federation" || currentRole === "admin") {
-                emptyTitle.textContent = "No Events";
-                emptyMsg.classList.add("hidden");
-            } else {
-                emptyTitle.textContent = "No Events Yet";
-                emptyMsg.textContent = "Check back soon for upcoming events!";
-                emptyMsg.classList.remove("hidden");
-            }
-            emptyState.classList.remove("hidden");
-        } else {
-            emptyState.classList.add("hidden");
-            renderEvents();
-        }
+        populateFilters();
+        applyFilters(); // This will handle rendering
     } catch (error) {
         console.error("Error loading events:", error);
         // Show empty state instead of error for better UX
@@ -175,15 +173,176 @@ async function loadEvents() {
     }
 }
 
+function populateFilters() {
+    const locationSelect = document.getElementById('filterLocation');
+    const categorySelect = document.getElementById('filterCategory');
+
+    // Get unique locations and categories
+    const locations = [...new Set(allEvents.map(e => e.city).filter(Boolean))].sort();
+    const categories = [...new Set(allEvents.map(e => e.category).filter(Boolean))].sort();
+
+    // Preserve current selection if possible
+    const currentLoc = locationSelect.value;
+    const currentCat = categorySelect.value;
+
+    // Reset options
+    locationSelect.innerHTML = '<option value="all">All Locations</option>';
+    categorySelect.innerHTML = '<option value="all">All Categories</option>';
+
+    locations.forEach(loc => {
+        const option = document.createElement('option');
+        option.value = loc;
+        option.textContent = loc;
+        if (loc === currentLoc) option.selected = true;
+        locationSelect.appendChild(option);
+    });
+
+    categories.forEach(cat => {
+        const option = document.createElement('option');
+        option.value = cat;
+        option.textContent = cat;
+        if (cat === currentCat) option.selected = true;
+        categorySelect.appendChild(option);
+    });
+}
+
+window.applyFilters = function () {
+    const locationFn = document.getElementById('filterLocation').value;
+    const categoryFn = document.getElementById('filterCategory').value;
+
+    filteredEvents = allEvents.filter(event => {
+        const matchLocation = locationFn === 'all' || event.city === locationFn;
+        const matchCategory = categoryFn === 'all' || event.category === categoryFn;
+        return matchLocation && matchCategory;
+    });
+
+    // Update Empty State logic
+    const grid = document.getElementById("eventsGrid");
+    const emptyState = document.getElementById("emptyState");
+    const emptyTitle = emptyState.querySelector('h3');
+    const emptyMsg = emptyState.querySelector('p');
+
+    if (filteredEvents.length === 0) {
+        if (currentView === 'grid') grid.innerHTML = "";
+        if (currentRole === "federation" || currentRole === "admin") {
+            emptyTitle.textContent = "No Events Found";
+            emptyMsg.classList.add("hidden");
+        } else {
+            emptyTitle.textContent = "No Events Found";
+            emptyMsg.textContent = "Try adjusting your filters.";
+            emptyMsg.classList.remove("hidden");
+        }
+        if (currentView === 'grid') emptyState.classList.remove("hidden");
+    } else {
+        emptyState.classList.add("hidden");
+    }
+
+    if (currentView === 'grid') {
+        renderEvents();
+    } else {
+        updateCalendarEvents();
+    }
+}
+
+window.switchView = function (view) {
+    currentView = view;
+
+    const gridBtn = document.getElementById('viewGridBtn');
+    const calendarBtn = document.getElementById('viewCalendarBtn');
+    const gridView = document.getElementById('eventsGrid');
+    const calendarView = document.getElementById('calendarView');
+    const emptyState = document.getElementById('emptyState');
+
+    if (view === 'grid') {
+        // Show Grid
+        gridBtn.classList.remove('text-slate-500', 'hover:text-[var(--primary)]', 'hover:bg-slate-50');
+        gridBtn.classList.add('bg-[var(--primary)]', 'text-white', 'shadow-md');
+
+        calendarBtn.classList.add('text-slate-500', 'hover:text-[var(--primary)]', 'hover:bg-slate-50');
+        calendarBtn.classList.remove('bg-[var(--primary)]', 'text-white', 'shadow-md');
+
+        gridView.classList.remove('hidden');
+        calendarView.classList.add('hidden');
+
+        // Re-check empty state for grid
+        if (filteredEvents.length === 0) emptyState.classList.remove("hidden");
+
+        renderEvents();
+    } else {
+        // Show Calendar
+        calendarBtn.classList.remove('text-slate-500', 'hover:text-[var(--primary)]', 'hover:bg-slate-50');
+        calendarBtn.classList.add('bg-[var(--primary)]', 'text-white', 'shadow-md');
+
+        gridBtn.classList.add('text-slate-500', 'hover:text-[var(--primary)]', 'hover:bg-slate-50');
+        gridBtn.classList.remove('bg-[var(--primary)]', 'text-white', 'shadow-md');
+
+        gridView.classList.add('hidden');
+        emptyState.classList.add('hidden'); // Hide empty state in calendar view (calendar handles empty itself)
+        calendarView.classList.remove('hidden');
+
+        if (!calendar) {
+            initCalendar();
+        } else {
+            calendar.render();
+            updateCalendarEvents();
+        }
+    }
+}
+
+function initCalendar() {
+    const calendarEl = document.getElementById('calendar');
+    calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,timeGridWeek,listMonth'
+        },
+        events: getCalendarEvents(),
+        eventClick: function (info) {
+            viewEventDetails(parseInt(info.event.id));
+        },
+        eventTimeFormat: {
+            hour: '2-digit',
+            minute: '2-digit',
+            meridiem: 'short'
+        },
+        height: 'auto',
+        aspectRatio: 1.8,
+    });
+    calendar.render();
+}
+
+function updateCalendarEvents() {
+    if (calendar) {
+        calendar.removeAllEvents();
+        calendar.addEventSource(getCalendarEvents());
+    }
+}
+
+function getCalendarEvents() {
+    return filteredEvents.map(event => ({
+        id: event.id,
+        title: event.title,
+        start: event.event_date + (event.event_time ? 'T' + event.event_time : ''),
+        // You can add more props like color based on status/category if needed
+        color: event.category === 'Open' ? '#012A61' : '#275A91',
+        extendedProps: {
+            venue: event.venue,
+            city: event.city
+        }
+    }));
+}
+
 function renderEvents() {
     const grid = document.getElementById("eventsGrid");
 
-    if (!allEvents || allEvents.length === 0) {
+    if (!filteredEvents || filteredEvents.length === 0) {
         grid.innerHTML = "";
         return;
     }
 
-    grid.innerHTML = allEvents.map(event => createEventCard(event)).join("");
+    grid.innerHTML = filteredEvents.map(event => createEventCard(event)).join("");
 }
 
 function createEventCard(event) {
@@ -221,13 +380,17 @@ function createEventCard(event) {
         <button onclick="registerForEvent(${event.id})" class="w-full mt-4 py-3 bg-[var(--primary)] text-white rounded-xl font-bold hover:bg-[var(--secondary)] transition-all">
             Register Now
         </button>
+    ` : '';
+
+    // Add to Calendar Button (Available for everyone)
+    const calendarButton = `
         <button onclick="addToCalendar(${event.id})" class="w-full mt-2 py-2 bg-white border-2 border-[var(--primary)] text-[var(--primary)] rounded-xl font-semibold hover:bg-slate-50 transition-all flex items-center justify-center gap-2">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
             </svg>
             Add to Calendar
         </button>
-    ` : '';
+    `;
 
     return `
         <div class="bg-white rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all transform hover:-translate-y-1">
@@ -267,6 +430,7 @@ function createEventCard(event) {
                 </button>
                 
                 ${athleteButton}
+                ${calendarButton}
                 ${adminButtons}
             </div>
         </div>
@@ -306,6 +470,7 @@ function openEventModal(event = null) {
         document.getElementById("eventTime").value = event.event_time || '';
         document.getElementById("eventVenue").value = event.venue || '';
         document.getElementById("eventCity").value = event.city || '';
+        syncDropdown("eventCitySelect", "eventCity", CITIES);
         document.getElementById("eventCategory").value = event.category || '';
         document.getElementById("eventDeadline").value = formatDateForInput(event.registration_deadline);
         document.getElementById("eventEligibility").value = event.eligibility || '';
@@ -377,7 +542,11 @@ async function handleEventSubmit(e) {
         } else {
             await API.createEvent(eventData);
             hideLoading();
-            await showAlert("Event created successfully! Emails sent to all athletes.", "Success");
+            // Show custom notification logic instead of generic alert
+            closeEventModal();
+            await loadEvents();
+            sendEventWhatsAppNotification(eventData);
+            return; // Exit early as we handle UI in function above
         }
 
         closeEventModal();
@@ -464,6 +633,11 @@ window.addToCalendar = function (eventId) {
         `SUMMARY:${event.title}`,
         `DESCRIPTION:${(event.description || '').replace(/\n/g, '\\n')}`,
         `LOCATION:${event.venue}, ${event.city}`,
+        'BEGIN:VALARM',
+        'TRIGGER:-PT1H',
+        'DESCRIPTION:Event Reminder',
+        'ACTION:DISPLAY',
+        'END:VALARM',
         'END:VEVENT',
         'END:VCALENDAR'
     ].join('\r\n');
@@ -552,3 +726,85 @@ window.viewEventDetails = async function (eventId) {
         await showAlert("Failed to load event details.", "Error");
     }
 };
+
+// WhatsApp Event Notification Logic
+async function sendEventWhatsAppNotification(event) {
+    try {
+        showLoading();
+        // 1. Fetch all athletes to get numbers
+        // Note: In a real large app, this should be paginated or handled by backend, 
+        // but for this MVP/Role, we fetch all.
+        const athletes = await API.getAllAthletes();
+        hideLoading();
+
+        // 2. Filter Valid Numbers
+        const phones = athletes
+            .map(a => a.personal?.phone || a.phone)
+            .filter(p => p && p.trim().length > 0);
+
+        // 3. Construct Message
+        const msg = `*New Event Alert: ${event.title}*\n\n📅 ${new Date(event.event_date).toLocaleDateString()}\n📍 ${event.city}\n\n${event.description}\n\nRegister now on Talent Tracker!`;
+
+        // 4. Populate Modal
+        waEventCount.textContent = phones.length;
+        waEventMessage.value = msg;
+        waEventNumbers.value = phones.join(',');
+
+        // 5. Show Modal
+        waEventModal.classList.remove("hidden");
+        setTimeout(() => {
+            waEventModalContent.classList.remove("scale-95", "opacity-0");
+            waEventModalContent.classList.add("scale-100", "opacity-100");
+        }, 10);
+
+    } catch (err) {
+        hideLoading();
+        console.error("Error preparing WA notification:", err);
+        showAlert("Event created, but failed to load athlete phone numbers.", "Warning");
+    }
+}
+
+// Modal Listeners
+if (closeWaEventBtn) {
+    closeWaEventBtn.addEventListener("click", () => {
+        waEventModalContent.classList.remove("scale-100", "opacity-100");
+        waEventModalContent.classList.add("scale-95", "opacity-0");
+        setTimeout(() => {
+            waEventModal.classList.add("hidden");
+        }, 300);
+    });
+}
+
+if (openWaEventBtn) {
+    openWaEventBtn.addEventListener("click", () => {
+        window.open('https://web.whatsapp.com');
+    });
+}
+
+if (copyWaMsgBtn) {
+    copyWaMsgBtn.addEventListener("click", () => {
+        waEventMessage.select();
+        document.execCommand('copy'); // Fallback or use Clipboard API
+        navigator.clipboard.writeText(waEventMessage.value).then(() => {
+            const original = copyWaMsgBtn.textContent;
+            copyWaMsgBtn.textContent = "Copied!";
+            setTimeout(() => copyWaMsgBtn.textContent = original, 2000);
+        });
+    });
+}
+
+if (copyWaNumBtn) {
+    copyWaNumBtn.addEventListener("click", () => {
+        waEventNumbers.select();
+        navigator.clipboard.writeText(waEventNumbers.value).then(() => {
+            const original = copyWaNumBtn.textContent;
+            copyWaNumBtn.textContent = "Copied!";
+            setTimeout(() => copyWaNumBtn.textContent = original, 2000);
+        });
+    });
+}
+
+// Init Location Dropdowns
+document.addEventListener('DOMContentLoaded', () => {
+    setupDropdownInput('eventCitySelect', 'eventCity', CITIES);
+});

@@ -8,29 +8,40 @@ const SECRET_KEY = process.env.JWT_SECRET || 'your_super_secret_key_change_this'
 
 // REGISTER
 router.post('/register', async (req, res) => {
-    const { email, password, username, role } = req.body;
+    const { email, password, username, role, phone } = req.body;
 
-    if (!email || !password || !role) {
-        return res.status(400).json({ error: 'Email, password, and role are required' });
+    if (!password || !role || !phone) {
+        return res.status(400).json({ error: 'Password, role, and phone are required' });
     }
 
     try {
-        // Check if user exists (email or username)
-        const [existing] = await db.query('SELECT * FROM users WHERE email = ? OR username = ?', [email, username]);
+        // Check if user exists (phone, username, or email if provided)
+        let query = 'SELECT * FROM users WHERE phone = ? OR username = ?';
+        let params = [phone, username];
+
+        if (email) {
+            query += ' OR email = ?';
+            params.push(email);
+        }
+
+        const [existing] = await db.query(query, params);
         if (existing.length > 0) {
-            return res.status(400).json({ error: 'Email or Username already exists' });
+            if (email && existing[0].email === email) return res.status(400).json({ error: 'Email already exists' });
+            if (existing[0].username === username) return res.status(400).json({ error: 'Username already exists' });
+            if (existing[0].phone === phone) return res.status(400).json({ error: 'Phone number already exists' });
+            return res.status(400).json({ error: 'User already exists' });
         }
 
         const passwordHash = await bcrypt.hash(password, 10);
         const [result] = await db.query(
-            'INSERT INTO users (email, password_hash, username, role) VALUES (?, ?, ?, ?)',
-            [email, passwordHash, username, role]
+            'INSERT INTO users (email, password_hash, username, role, phone) VALUES (?, ?, ?, ?, ?)',
+            [email || null, passwordHash, username, role, phone]
         );
 
         const userId = result.insertId;
         const token = jwt.sign({ id: userId, email, role }, SECRET_KEY, { expiresIn: '24h' });
 
-        res.json({ message: 'User registered successfully', token, user: { uid: userId, email, username, role } });
+        res.json({ message: 'User registered successfully', token, user: { uid: userId, email, username, role, phone } });
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Server error during registration' });
@@ -42,8 +53,8 @@ router.post('/login', async (req, res) => {
     const { email: identifier, password, role } = req.body;
 
     try {
-        let query = 'SELECT * FROM users WHERE (email = ? OR username = ?)';
-        let params = [identifier, identifier];
+        let query = 'SELECT * FROM users WHERE (email = ? OR phone = ? OR username = ?)';
+        let params = [identifier, identifier, identifier];
 
         if (role) {
             query += ' AND role = ?';

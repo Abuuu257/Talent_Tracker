@@ -221,6 +221,42 @@
         </div>
     </section>
 
+    <!-- SQUAD PLAN SECTION -->
+    <section id="athleteSquadSection" class="max-w-7xl mx-auto px-6 pb-20 hidden">
+        <h2 class="text-3xl font-black text-[var(--primary)] mb-6">Your Squad Plan</h2>
+        <div
+            class="bg-white p-8 rounded-[2rem] shadow-xl border border-white/40 backdrop-blur-sm relative overflow-hidden">
+            <!-- Decorative background element -->
+            <div
+                class="absolute -top-10 -right-10 w-40 h-40 bg-[var(--highlight)] rounded-full mix-blend-multiply filter blur-3xl opacity-20">
+            </div>
+
+            <div class="relative z-10">
+                <div class="flex items-center gap-4 mb-6">
+                    <div
+                        class="h-12 w-12 rounded-xl bg-[var(--secondary)] text-white flex items-center justify-center shadow-lg">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-gray-800" id="squadNameDisplay">Loading...</h3>
+                        <p class="text-sm font-semibold text-gray-500" id="squadCoachDisplay">Coach: ...</p>
+                    </div>
+                </div>
+
+                <div class="bg-slate-50 p-6 rounded-2xl border border-slate-100 mb-2">
+                    <p id="squadPlanText" class="whitespace-pre-wrap text-slate-700 font-medium leading-relaxed">No plan
+                        posted yet.</p>
+                </div>
+
+                <p class="text-xs text-slate-400 font-bold uppercase tracking-widest text-right mt-4">Visible only to
+                    squad members</p>
+            </div>
+        </div>
+    </section>
+
     <footer class="bg-[var(--background)] text-black border-t border-gray-400 mt-12">
         <div class="max-w-7xl mx-auto py-8 text-center text-sm font-medium">
             © 2025 Talent Tracker. All Rights Reserved.

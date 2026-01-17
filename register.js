@@ -56,8 +56,8 @@ if (storedUser) {
   setTimeout(() => notifyListeners(null), 0);
 }
 
-export async function registerUser(email, password, username, role = 'athlete') {
-  const response = await API.register(email, password, username, role);
+export async function registerUser(email, password, username, role = 'athlete', phone = null) {
+  const response = await API.register(email, password, username, role, phone);
   // Login automatically after register? Usually yes.
   const { user, token } = response;
   auth.currentUser = user;
@@ -176,6 +176,10 @@ export async function removeFromSquad(coachId, squadId, athleteId) {
 
 export async function deleteSquad(coachId, squadId) {
   return API.deleteSquad(coachId, squadId);
+}
+
+export async function updateSquad(coachId, squadId, data) {
+  return API.updateSquad(coachId, squadId, data);
 }
 
 export async function getUserByUsername(username, role) {
